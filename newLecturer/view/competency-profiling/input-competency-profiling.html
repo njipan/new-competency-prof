@@ -1,0 +1,663 @@
+<style>
+    .cursor-pointer{
+        cursor: pointer;
+    }
+</style>
+<div id="input-competency-profiling-app">
+    <div class="p-wrapper search-filter-form">
+        <form @submit.prevent="createForm"> 
+            <div class="page-screen rel" v-if="isPageLoaded" style="background-color: white;">
+                <div class="loading-label">Please Wait</div>
+                <div class="nj-loading m"><div class="item"></div> <div class="item"></div> <div class="item"></div></div>
+            </div>
+            <h2 class="text-center">Input Competency Profiling</h2>
+            <div>
+                <div class="row">
+                    <div class="form-group clearfix">
+                        <div class="column one-third">
+                            <label class="side" for="">Choose Period <span class="color-red">*</span></label>
+                        </div>
+                        <div class="column two-thirds">
+                            <span class="custom-combobox">
+                                <select v-model="form.period">
+                                    <option :value="{}" selected>Choose period date</option>
+                                    <option v-for="period in periods" :value="period">
+                                        <template v-if="period.FormattedStartDt == null">NULL</template>
+                                        <template v-else>{{ period.FormattedStartDt }}</template>
+                                    </option>
+                                </select>
+                                <span class="combobox-label">
+                                    <template v-if="typeof form.period.FormattedStartDt == 'undefined'">Please select period</template>
+                                    <template v-else-if="form.period.FormattedStartDt == null">NULL</template>
+                                    <template v-else>{{ form.period.FormattedStartDt }}</template>
+                                </span>
+                            </span>
+                            <label class="label-message color-red">
+                                {{ errors.period || "&nbsp;" }} 
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group clearfix">
+                        <div class="column one-third">
+                            <label class="side" for="">Choose Type <span class="color-red">*</span></label>
+                        </div>
+                        <div class="column two-thirds">
+                            <span class="custom-combobox">
+                                <select v-model="form.itemType" @change="form.itemSubType = {};">
+                                    <option :value="{}" selected>Please select type</option>
+                                    <option v-for="type in itemTypes" :value="type">
+                                        {{ type.DESCR50 }}
+                                    </option>
+                                </select>
+                                <span class="combobox-label">
+                                    {{ form.itemType.DESCR50 || "Choose type" }} 
+                                </span>
+                            </span>
+                            <label class="label-message color-red">
+                                {{ errors.itemType || "&nbsp;" }} 
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group clearfix">
+                        <div class="column one-third">
+                            <label class="side" for="">
+                                Choose Sub Type <span class="color-red">*</span>
+                                <div class="nj-loading s" v-show="isFetchingSubType">
+                                    <div class="item"></div>
+                                    <div class="item"></div>
+                                    <div class="item"></div>
+                                </div>
+                            </label>
+                        </div> 
+                        <div class="column two-thirds">
+                            <span class="custom-combobox">
+                                <select v-model="form.itemSubType">
+                                    <option :value="{}" selected>Please select sub type</option>
+                                    <option v-for="subtype in getSubTypes(form.itemType.N_ITEM_ID)" :value="subtype">
+                                        {{ subtype.DESCR50 }}
+                                    </option>
+                                </select>
+                                <span class="combobox-label">
+                                    {{ form.itemSubType.DESCR50 || "Choose type first" }} 
+                                </span>
+                            </span>
+                            <label class="label-message color-red">
+                                {{ errors.itemSubType || "&nbsp;" }} 
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group clearfix" style="text-align:right">
+                        <div class="column">
+                            <button class="button button-primary" @click.prevent="createForm">Create</button>
+                            <button class="button button-primary" @click.prevent="onSearchClicked">Search</button>    
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <nj-popup v-if="ACTION_TYPE == TYPE_CREATE && modalTypeState == TOEFL" @close="onCloseUploadToefl">
+        <form :ref="TOEFL" class="form-dynamic shadow-md" style="background-color: white;width: 450px;" @submit.prevent="">
+            <h3 style="text-align: center;text-transform: uppercase;">Upload TOEFL Certificarte</h3>
+            <div class="row">
+                <div class="form-group clearfix">
+                    <div class="column one-third">
+                        <label class="side" for="">Choose File <span class="color-red">*</span>
+                            <br> 
+                            <span class="mini-message">Pilih file</span>
+                        </label>
+                    </div>
+                    <div class="column two-thirds" style="overflow: hidden;">
+                        <input type="file"
+                        name="certificate"                                 
+                        data-field="certificate"
+                        @change="fileCertificateChanged($event)"
+                        >
+                        <button @click.prevent="resetFile(null, $event);dataToefl.errors={};">Clear</button>
+                        <label class="label-message color-red">                                    
+                            {{ dataToefl.errors.certificate }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="column" style="text-align: right;">
+                    <nj-button @click="uploadToefl" :is-processed="dataToefl.isSubmitting" display-text="Upload" animation-color="white">
+                    </nj-button>
+                </div>
+            </div> 
+        </form>
+    </nj-popup>
+    <div class="p-wrapper search-filter-form" v-if="ACTION_TYPE == TYPE_CREATE && (formTypeState != '' && formTypeState != null)">
+        <form v-if="formTypeState == TEACHING_LEARNING" @submit.prevent="" :ref="TEACHING_LEARNING">
+            <h3 style="text-align: center;text-transform: uppercase;">Teaching Learning</h3>
+            <div v-for="(item, index) in forms" track-by="id" class="form-dynamic search-filter-form">
+                <div class="row">
+                    <div class="column" style="text-align: right;">
+                        <span class="icon-box" @click="toggleMinMax"><i class="icon icon-view"></i></span>
+                        <span class="icon-box" @click="deleteForm(item)"><i class="icon icon-trash"></i></span>
+                    </div>
+                </div>
+                <div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">Teaching Period <span class="color-red">*</span>
+                                    <br> 
+                                    <span class="mini-message">Periode Mengajar</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.teachingPeriod" :name="`${item.id}[teachingPeriod]`" data-field="teachingPeriod"@input="item.errors.teachingPeriod = validateRequireText(item.teachingPeriod);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.teachingPeriod }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">Course <span class="color-red">*</span>
+                                    <br> 
+                                    <span class="mini-message">Mata Kuliah</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.course" :name="`${item.id}[course]`" data-field="course"
+                                @input="item.errors.course = validateRequireText(item.course);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.course }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">Teaching Form <span class="color-red">*</span> 
+                                    <br>  
+                                    <span class="mini-message">Form Mengajar</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="file"
+                                :name="`${item.id}[teachingForm]`" 
+                                data-field="teachingForm" 
+                                @change="filesChanged( $event , index, fileRules.teachingForm)"
+                                >
+                                <button @click.prevent="resetFile(index, $event)">Clear</button>
+                                <label class="label-message color-red">                                    
+                                    {{ item.errors.teachingForm }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">Additional Material <span class="color-red">*</span>
+                                    <br> 
+                                    <span class="mini-message">Materi Tambahan</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="file" 
+                                :name="`${item.id}[additionalMaterials][]`" 
+                                data-field="additionalMaterials" 
+                                @change="filesChanged( $event , index, fileRules.additionalMaterials)"
+                                multiple>
+                                <button @click.prevent="resetFile(index, $event)">Clear</button>
+                                <label class="label-message color-red">                                    
+                                    {{ item.errors.additionalMaterials }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <form v-if="formTypeState == COMMUNITY_DEVELOPMENT" @submit.prevent="" :ref="COMMUNITY_DEVELOPMENT">
+            <h3 style="text-align: center;text-transform: uppercase;">Community Development Profiling</h3>
+            <div v-for="(item, index) in forms" track-by="id" class="form-dynamic search-filter-form">
+                <div class="row">
+                    <div class="column" style="text-align: right;">
+                        <span class="icon-box" @click="toggleMinMax"><i class="icon icon-view"></i></span>
+                        <span class="icon-box" @click="deleteForm(item)"><i class="icon icon-trash"></i></span>
+                    </div>
+                </div>
+                <div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">Activity Name <span class="color-red">*</span>
+                                    <br>
+                                    <span class="mini-message">Nama Aktifitas</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.activity" :name="`${item.id}[activity]`" data-field="activity" 
+                                @input="validateRequired($event, item.activity, index)">
+                                <label class="label-message color-red">
+                                    {{ item.errors.activity }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">Date Of Implementation <span class="color-red">*</span>
+                                    <br>
+                                    <span class="mini-message">Tanggal Pelaksanaan</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <div class="row" style="margin : 0 !important;">
+                                    <div class="column one-half" style="padding-left: 0px !important;">
+                                        <nj-datepicker 
+                                        v-model="item.startDate" 
+                                        :name="`${item.id}[startDate]`" 
+                                        field-name="startDate"
+                                        @input="item.errors.startDate = validateStartDate($event, item.endDate)"
+                                        ></nj-datepicker>
+                                        <label class="label-message color-red">
+                                            {{ item.errors.startDate }}
+                                        </label> 
+                                    </div>
+                                    <div class="column one-half" style="padding-right: 0px !important;">
+                                        <nj-datepicker 
+                                        v-model="item.endDate" 
+                                        :name="`${item.id}[endDate]`" 
+                                        field-name="endDate"
+                                        @input="item.errors.endDate = validateEndDate($event, item.startDate)"
+                                        ></nj-datepicker>
+                                        <label class="label-message color-red">
+                                            {{ item.errors.endDate }}
+                                        </label> 
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">
+                                    Supporting Material <span class="color-red">*</span>
+                                    <br> 
+                                    <span class="mini-message">File pendukung</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="file"
+                                    style="width: 200px;" 
+                                    :name="`${item.id}[supportingMaterials][]`" 
+                                    data-field="supportingMaterials" 
+                                    @change="filesChanged( $event , index, fileRules.supportingMaterials)"
+                                    multiple
+                                >
+                                <button @click.prevent="resetFile(index, $event)">Clear</button>
+                                <label class="label-message color-red">
+                                    {{ item.errors.supportingMaterials }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>    
+            </div>
+        </form>
+        <form v-if="formTypeState == RESEARCH" @submit.prevent="" :ref="RESEARCH">
+            <h3 style="text-align: center;text-transform: uppercase;">Research</h3>
+            <div v-for="(item, index) in forms" track-by="id" class="form-dynamic search-filter-form">
+                <div class="row">
+                    <div class="column" style="text-align: right;">
+                        <span class="icon-box" @click="toggleMinMax"><i class="icon icon-view"></i></span>
+                        <span class="icon-box" @click="deleteForm(item)"><i class="icon icon-trash"></i></span>
+                    </div>
+                </div>
+                <div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">
+                                    Year <span class="color-red">*</span>
+                                    <br> 
+                                    <span>Tahun Penelitian</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.year" :name="`${item.id}[year]`" data-field="year" 
+                                @input="item.errors.year = validateRequireText(item.year);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.year }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">
+                                    Title <span class="color-red">*</span>
+                                    <br> 
+                                    <span>Judul Penelitian</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.title" :name="`${item.id}[title]`" data-field="title" 
+                                @input="item.errors.title = validateRequireText(item.title);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.title }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">
+                                    Budget Source <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">Sumber Dana</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.budgetSource" :name="`${item.id}[budgetSource]`" data-field="budgetSource" 
+                                @input="item.errors.budgetSource = validateRequireText(item.budgetSource);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.budgetSource }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label for="" class="side">
+                                        Budget <span class="color-red">*</span> 
+                                        <br> 
+                                        <span class="mini-message">Total Dana</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <div style="display: flex;align-items: center;">
+                                    <span style="display: block;padding: 8px;border: 1px solid #c9c9c9;border-right: none;background-color:white;">Rp </span>
+                                    <input type="text" v-model="item.budget" :name="`${item.id}[budget]`" data-field="budget" 
+                                    @input="item.errors.budget = validateRequireText(item.budget);">
+                                </div>
+                                <label class="label-message color-red">
+                                    {{ item.errors.budget }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side">
+                                    Status <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">Status Kepesertaan</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <span class="custom-combobox">
+                                    <select v-model="item.status" data-field="status" :name="`${item.id}[status]`"
+                                    @change="item.errors.status = validateRequireText($event.target.value);">
+                                        <option :value="''">Please select status</option>
+                                        <option v-for="status in membershipStatuses" :value="status.StatusKepID" >{{ status.StatusKep }}</option>
+                                    </select>
+                                    <span class="combobox-label">
+                                        {{ findMembershipStatus(item.status || null) || "Please select status" }}
+                                    </span>
+                                </span>
+                                <label class="label-message color-red">
+                                    {{ item.errors.status }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label class="side" for="">
+                                    Research Level <span class="color-red">*</span>
+                                    <br> 
+                                    <span class="mini-message">Tingkat Penelitian</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <span class="custom-combobox">
+                                    <select v-model="item.researchLevel" :name="`${item.id}[researchLevel]`" data-field="researchLevel"
+                                    @change="item.errors.researchLevel = validateRequireText($event.target.value);">
+                                        <option :value="''" selected>Please select level</option>
+                                        <option v-for="researchLevel in researchLevels" :value="researchLevel.LevelResearchID">
+                                            {{ researchLevel.Level }}
+                                        </option>                                        
+                                    </select>
+                                    <span class="combobox-label">
+                                        {{ findResearchLevel(item.researchLevel || null) || "Please select level" }}
+                                    </span>
+                                </span>
+                                <label class="label-message color-red">
+                                    {{ item.errors.researchLevel }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label for="" class="side">
+                                    Publisher <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">Penerbit</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.publisher" :name="`${item.id}[publisher]`" data-field="publisher" 
+                                @input="item.errors.publisher = validateRequireText(item.publisher);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.publisher }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label for="" class="side" style="margin-left: 20px;">
+                                    Volume <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">Volume</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.publisherVolume" :name="`${item.id}[publisherVolume]`" data-field="publisherVolume"
+                                @input="item.errors.publisherVolume = validateRequireText(item.publisherVolume);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.publisherVolume }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label for="" class="side" style="margin-left: 20px;">
+                                    Number <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">Nomor</span>
+                                </label>    
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.publisherNumber" :name="`${item.id}[publisherNumber]`" data-field="publisherNumber"
+                                @input="item.errors.publisherNumber = validateRequireText(item.publisherNumber);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.publisherNumber }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label for="" class="side" style="margin-left: 20px;">
+                                    Year <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">Tahun</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.publisherYear" :name="`${item.id}[publisherYear]`" data-field="publisherYear"
+                                @input="item.errors.publisherYear = validateRequireText(item.publisherYear);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.publisherYear }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label for="" class="side"  style="margin-left: 20px;">
+                                    ISSN/ISBN <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">ISSN/ISBN</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.publisherISSNISBN" :name="`${item.id}[publisherISSNISBN]`" data-field="publisherISSNISBN" 
+                                @input="item.errors.publisherISSNISBN = validateRequireText(item.publisherISSNISBN);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.publisherISSNISBN }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label for="" class="side">
+                                    Publication Title <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">Judul Publikasi</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.publicationTitle" :name="`${item.id}[publicationTitle]`" data-field="publicationTitle" 
+                                @input="item.errors.publicationTitle = validateRequireText(item.publicationTitle);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.publicationTitle }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label for="" class="side">
+                                    Publication Year <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">Tahun Publikasi</span>
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="text" v-model="item.publicationYear" :name="`${item.id}[publicationYear]`" data-field="publicationYear" 
+                                @input="item.errors.publicationYear = validateRequireText(item.publicationYear);">
+                                <label class="label-message color-red">
+                                    {{ item.errors.publicationYear }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <div class="column one-third">
+                                <label for="" class="side">
+                                    Supporting Material <span class="color-red">*</span> 
+                                    <br> 
+                                    <span class="mini-message">File Pendukung</span>                                    
+                                </label>
+                            </div>
+                            <div class="column two-thirds">
+                                <input type="file" 
+                                    :name="`${item.id}[supportingMaterials][]`" 
+                                    data-field="supportingMaterials" 
+                                    @change="filesChanged( $event , index, fileRules.researchSupportingMaterials)"
+                                    multiple
+                                >
+                                <button @click.prevent="resetFile(null, $event);item.errors.supportingMaterials = 'File must be chosen';">Clear</button>
+                                <label class="label-message color-red">
+                                    {{ item.errors.supportingMaterials }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="fill-between" style="margin: 10px 0;" v-if="formTypeState != null">
+            <span @click="addForm" class="icon-box">
+                <i class="icon icon-add filter-primary-color"></i>
+            </span>
+            <nj-button @click="saveForm" :is-processed="isSubmitting" display-text="Save" animation-color="white"></nj-button>
+        </div>
+    </div>
+    <div class="p-wrapper search-filter-form" v-if="searchTypeState == ACADEMIC && dataSubTypes.length > 0">
+        <div>
+            <a @click.prevent="onSubTypeClicked(TEACHING_LEARNING)" :class="{ clicked : searchSubTypeState == TEACHING_LEARNING }">
+                Teaching Learning
+            </a> &nbsp;
+            <a @click.prevent="onSubTypeClicked(RESEARCH)" :class="{ clicked : searchSubTypeState == RESEARCH }">
+                Research
+            </a> &nbsp;
+            <a @click.prevent="onSubTypeClicked(COMMUNITY_DEVELOPMENT)" :class="{ clicked : searchSubTypeState == COMMUNITY_DEVELOPMENT }">
+                Community Development
+            </a>    
+        </div>
+        <br>
+        <div>
+            <list-research 
+                @delete="onDeleted($event, RESEARCH, 'ResearchTrID')" 
+                @update="onSubTypeClicked(RESEARCH)" 
+                v-if="searchSubTypeState == RESEARCH"
+                :research-levels = "researchLevels"
+                :membership-statuses = "membershipStatuses" 
+                :items="dataSubTypes">
+            </list-research>
+            <list-teaching-learning 
+                @delete="onDeleted($event, TEACHING_LEARNING, 'TeachingTrID')" 
+                @update="onSubTypeClicked(TEACHING_LEARNING)" 
+                v-if="searchSubTypeState == TEACHING_LEARNING" 
+                :items="dataSubTypes">
+            </list-teaching-learning>
+            <list-community-development 
+                @delete="onDeleted($event, COMMUNITY_DEVELOPMENT, 'ComdevTrID')" 
+                @update="onSubTypeClicked(COMMUNITY_DEVELOPMENT)" 
+                v-if="searchSubTypeState == COMMUNITY_DEVELOPMENT" 
+                :items="dataSubTypes">
+            </list-community-development>
+            
+        </div>
+
+    </div>
+    <template v-if="searchTypeState == TECHNICAL">
+        <nj-popup v-if="ACTION_TYPE == TYPE_SEARCH" @close="ACTION_TYPE = searchTypeState = modalTypeState = null;">
+            <div class="p-wrapper shadow-md" style="background-color: white;width: 600px;" @submit.prevent="">
+                <div class="row" style="margin: 0 !important;">
+                    <div class="column">
+                        <list-toefl 
+                            :validate-certificate="validateFileCertificate" 
+                            @delete="onDeleted($event, TOEFL, 'ToeflID')" 
+                            @update="onSubTypeClicked(TOEFL)" 
+                            :items="dataSubTypes" 
+                            v-if="searchSubTypeState == TOEFL">
+                        </list-toefl>
+                    </div>
+                </div>
+            </div>
+        </nj-popup>
+    </template>
+</div> 

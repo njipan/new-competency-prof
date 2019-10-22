@@ -1,0 +1,161 @@
+    <style>
+        .row{
+            margin: 14px -10px !important;
+        }
+        .text-center{
+            text-align: center;
+        }
+        #setup-period-app .column > button{
+            width: 120px;
+        }
+        .form-label{
+            text-align: left;
+        }
+        #table-period{
+            padding: 20px;
+        }
+    </style>
+    <div id="setup-period-app">
+        <div class="search-filter-form">
+            <form v-on:submit.prevent="submit" ref="form">
+                <h2 class="text-center">
+                    <template v-if="ACTION == ACTION_CREATE">New Period</template>
+                    <template v-else-if="ACTION == ACTION_EDIT">Edit Existing Period</template>
+                    <template v-else="">Setup Period</template>
+                </h2>
+                <div>
+                    <div class="row" v-if="ACTION == ACTION_EDIT">
+                        <div class="column">
+                            <label for="">Period ID <span class="color-red">*</span></label>
+                            <input type="text" v-model="form.period_id" readonly>
+                            <label class="label-message color-red">
+                                {{ "&nbsp;" }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="row">
+                        <div v-show="isSending" class="page-screen rel" style="position: absolute;">
+                            <span class="loader"><span class="indicator"></span></span>
+                        </div>
+                        <div class="column">
+                            <label for="" class="form-label">Institution <span class="color-red">*</span></label>
+                            <span class="custom-combobox">
+                                <select v-model="form.institution" @change="onFormInstitutionChanged">
+                                    <option :value="{}" selected>Please select institution</option>
+                                    <option v-for="institution in institutions" :value="institution" 
+                                    :selected="form.institution.Description == institution.Description">
+                                        {{ institution.InstName }}
+                                    </option>
+                                </select>
+                                <span class="combobox-label">
+                                    {{ form.institution.InstName || "Please select institution" }}
+                                </span>
+                            </span>
+                            <label class="label-message color-red">
+                                {{ errors.form.institution || "&nbsp;" }}
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="column">
+                            <label for="" class="form-label">Start Date <span class="color-red">*</span></label>
+                            <nj-datepicker 
+                            v-model="form.startDate"
+                            name="startDate"
+                            @input="onFormStartDateChanged"
+                            ></nj-datepicker>
+                            <label class="label-message color-red">
+                                {{ errors.form.startDate || "&nbsp;" }}
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="column">
+                            <label for="" class="form-label">End Date <span class="color-red">*</span></label>
+                            <nj-datepicker 
+                            v-model="form.endDate"
+                            name="endDate"
+                            @input="onFormEndDateChanged"
+                            ></nj-datepicker>
+                            <label class="label-message color-red">
+                                {{ errors.form.endDate || "&nbsp;" }}
+                            </label>
+                        </div>
+                    </div>
+                    <template v-if="ACTION != null">
+                        <div class="row">
+                            <div class="column">
+                                <label for="" class="form-label">Effective Date <span class="color-red">*</span></label>
+                                <span class="custom-combobox">
+                                    <select v-model="form.effdate" @change="onFormEffDateChanged">
+                                        <option :value="{}" selected>Please select date</option>
+                                        <option v-for="effdate in filteredEffdates" :value="effdate" 
+                                        :selected="form.effdate.EffDt == effdate.EffDt">
+                                            {{ effdate.ConvEffdt }}
+                                        </option>
+                                    </select>
+                                    <span class="combobox-label">
+                                        {{ form.effdate.ConvEffdt || "Please select date" }}
+                                    </span>
+                                </span>
+                                <label class="label-message color-red">
+                                    {{ errors.form.effdate || "&nbsp;" }}
+                                </label>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <div>
+                    <div class="row text-center">
+                        <div class="column">
+                            <template v-if="ACTION == null">
+                                <nj-button @click.prevent="onCreateClicked" :is-processed="false" display-text="CREATE" animation-color="white"></nj-button>
+                                <nj-button @click.prevent="search" :is-processed="isSearching" display-text="SEARCH" animation-color="white"></nj-button>
+                            </template>
+                            <template v-if="ACTION != null">
+                                <nj-button @click="" :is-processed="false" :display-text="(ACTION == ACTION_CREATE ) ? 'CREATE' : 'SAVE'" animation-color="white"></nj-button>
+                                <nj-button @click.prevent="cancel" :is-processed="false" display-text="CANCEL" animation-color="white"></nj-button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="table-period" class="search-filter-form" v-if="Array.isArray(periods) && periods.length > 0 && ACTION == null">
+            <div class="freeze-pane">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Institution</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Effective Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="period in periods">
+                            <td>{{ period.PeriodID }}</td>
+                            <td>{{ period.InstName }}</td>
+                            <td>{{ period.Period }}</td>
+                            <td>{{ period.PeriodEnd }}</td>
+                            <td>{{ period.FormattedEffDt || "Not Set" }}</td>
+                            <td>
+                                <span style="cursor: pointer;" class="color-blue" @click.prevent="show(period.PeriodID)">
+                                    <i class="icon icon-edit"></i>
+                                </span>
+                                &nbsp;
+                                <span style="cursor: pointer;" class="color-red" @click.prevent="onDelete(period.PeriodID)">
+                                    <i class="icon icon-trash"></i>
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br>
+    </div> 

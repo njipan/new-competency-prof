@@ -1,0 +1,335 @@
+<style>
+    .nj-table tr{
+        position: relative;
+    }
+    
+    .nj-table tr[disabled] td::after {
+        position: absolute;
+        content: '';
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.048);
+        z-index: 100;
+    }
+</style>
+<div id="list-candidate-app">
+    <div class="p-wrapper form-full search-filter-form">
+        <form @submit.prevent="">
+            <div v-show="isFormLoading" class="page-screen rel">
+                <div class="nj-loading m">
+                    <div class="item"></div>
+                    <div class="item"></div>
+                    <div class="item"></div>
+                </div>
+            </div>
+            <h2 class="text-center">
+                <template v-if="ACTION == ACTION_ADD">
+                    Add Candidate
+                </template>
+                <template v-else>
+                    Candidate Competency Profiling
+                </template>
+            </h2>
+            <div>
+                <div class="row clearfix">
+                    <div class="column one-half">
+                        <label for="" class="form-label">Institution <span class="color-red">*</span></label>
+                        <span class="custom-combobox">
+                            <select v-model="form.institution">
+                                <option :value="{}">Please select institution</option>
+                                <option v-for="institution in institutions" :value="institution">
+                                    {{ institution.InstName }}
+                                </option>
+                            </select>
+                            <span class="combobox-label">
+                                {{ form.institution.InstName || "Please select institution"}}
+                            </span>
+                        </span>
+                        <label class="label-message color-red">
+                            {{ errors.institution || "&nbsp;" }}
+                        </label>
+                    </div>
+                    <div class="column one-half">
+                        <label for="" class="form-label">Academic Organization <span class="color-red">*</span></label>
+                        <span class="custom-combobox">
+                            <select v-model="form.organization" >
+                                <option :value="{}">ALL</option>
+                                <option v-for="organization in organizations" :value="organization">
+                                    {{ organization.ACAD_ORG }} - {{ organization.DESCR }}
+                                </option>
+                            </select>
+                            </select>
+                            <span class="combobox-label">
+                                <template v-if="typeof form.organization != 'undefined' && typeof form.organization.DESCR != 'undefined' && typeof form.organization.ACAD_ORG != 'undefined'">
+                                    {{ form.organization.ACAD_ORG }} - {{ form.organization.DESCR }}
+                                </template>
+                                <template v-else>ALL</template>
+                            </span>
+                        </span>
+                        <label class="label-message color-red">
+                            {{ errors.organization || "&nbsp;" }}
+                        </label>
+                    </div>
+                </div>
+                <div class="row clearfix">
+                    <div class="column one-half">
+                        <label for="" class="form-label">Department <span class="color-red">*</span></label>
+                        <span class="custom-combobox">
+                            <select v-model="form.department">
+                                <option :value="{}">ALL</option>
+                                <option v-for="department in departments" :value="department">
+                                    {{ department.Dep }} - {{ department.DepName }}
+                                </option>
+                            </select>
+                            </select>
+                            <span class="combobox-label">
+                                <span v-if="typeof form.department.Dep != 'undefined' && typeof form.department.DepName != 'undefined'">
+                                    {{ form.department.Dep }} - {{ form.department.DepName }}
+                                </span>
+                                <span v-else>
+                                    ALL
+                                </span>
+                            </span>
+                        </span>
+                        <label class="label-message color-red">
+                            {{ errors.department || "&nbsp;" }}
+                        </label>
+                    </div>
+                    <div class="column one-half">
+                        <label for="" class="form-label">
+                            Period <span class="color-red">*</span>
+                            <div class="nj-loading s" v-show="isFetchingPeriod">
+                                <div class="item"></div>
+                                <div class="item"></div>
+                                <div class="item"></div>
+                            </div>
+                        </label>
+                        <span class="custom-combobox">
+                            <select v-model="form.period" :disabled="typeof form.institution.Inst == 'undefined'">
+                                <option :value="{}">Please select period</option>
+                                <option :value="period" v-for="period in filterPeriods(form.institution.Inst, )">
+                                    <template v-if="period.Period == null">NULL</template>
+                                    <template v-else>{{ period.Period }}</template>
+                                </option>
+                            </select>
+                            <span class="combobox-label">
+                                <template v-if="typeof form.period.Period == 'undefined'">Please select period</template>
+                                <template v-else-if="form.period.Period == null">NULL</template>
+                                <template v-else>{{ form.period.Period }}</template>
+                            </span>
+                        </span>
+                        <label class="label-message color-red">
+                            {{ errors.period || "&nbsp;" }}
+                        </label>
+                    </div>
+                </div>
+                <div class="row clearfix">
+                    <div class="column" style="text-align: right;">
+                        <nj-button @click="onAddCandidateClicked" :is-processed="isAddCandidateSearching" display-text="ADD CANDIDATE" animation-color="white"></nj-button>
+                        <nj-button @click="searchClicked" :is-processed="isSearching" display-text="Search" animation-color="white"></nj-button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="p-wrapper search-filter-form" v-if="candidates.length > 0">
+        <div style="position: relative;">
+            <h2 class="text-center">
+                <template v-if="ACTION == ACTION_ADD">
+                    ADD CANDIDATE
+                </template>
+                <template v-else>
+                    LECTURE LIST 
+                </template>
+            </h2>
+            <div @submit.prevent="" v-if="ACTION == ACTION_ADD">
+                <template v-if="candidates.length < 1">Data is empty ...</template>
+                <div class="freeze-pane" data-fixed-left="1" data-fixed-right="0" data-height="300" v-else>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th style="width: 100px;">ID</th>
+                            <th style="width: 200px;">Lecture</th>
+                            <th style="width: 200px;">Current JKA</th>
+                            <th style="width: 160px;">Current Grade</th>
+                            <th style="width: 240px;">Next JKA</th>
+                            <th style="width: 240px;">Next Grade</th>
+                            <th style="width: 160px;">Institution</th>
+                            <th style="width: 300px;">Academic Organization</th>
+                            <th style="width: 300px;">Department</th>
+                            <th style="width: 160px;">Behavioral Date</th>
+                            <th style="width: 160px;">Period</th>
+                            <th style="width: 240px;">Reason</th>
+                            <th><input type="checkbox" @click="selectAllClicked"/></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(candidate, index) in candidates" style="width: 67px;">
+                            <td><div style="width: 100px;">{{ candidate.Emplid }}</div></td>
+                            <td><div style="width: 200px;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
+                            <td><div style="width: 200px;">{{ candidate.CurrentJKA || "-" }}</div></td>
+                            <td><div style="width: 160px;">{{ candidate.CurrentGradeJKA }}</div></td>
+                            <td>
+                                <span class="custom-combobox" style="width: 240px;">
+                                    <select @change="candidate.NextJKA = $event.target.value;">
+                                        <option :value="desc" v-for="desc in levelDescs">
+                                            {{ desc }}
+                                        </option>
+                                    </select>
+                                    <span class="combobox-label">
+                                        {{ candidate.NextJKA }}
+                                    </span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="custom-combobox" style="width: 240px;">
+                                    <select @change="candidate.NextGradeJKA = $event.target.value;">
+                                        <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA)">
+                                            {{ grade.N_JKA_ID }}
+                                        </option>
+                                    </select>
+                                    <span class="combobox-label">
+                                        {{ candidate.NextGradeJKA }}
+                                    </span>
+                                </span>
+                            </td>
+                            <td><div style="width: 160px;">{{ institutions[candidate.Inst].InstName }}</div></td>
+                            <td><div style="width: 300px;">{{ candidate.AcadOrg }} - {{ candidate.AcadName }}</div></td>
+                            <td><div style="width: 300px;">{{ candidate.DepName }}</div></td>
+                            <td><div style="width: 160px;">{{ candidate.BehaviorDate || "-" }}</div></td>
+                            <td><div style="width: 160px;">{{ form.period.Period || "-" }}</div></td>
+                            <td>
+                                <span class="custom-combobox" style="width: 240px;">
+                                    <select @change="candidate.ReasonID = $event.target.value;">
+                                        <option :value="reason.ReasonID" v-for="reason in reasons">
+                                            {{ reason.Reason }}
+                                        </option>
+                                    </select>
+                                    <span class="combobox-label">
+                                        {{ reasons[candidate.ReasonID].Reason }}
+                                    </span>
+                                </span>
+                            </td>
+                            <td><input type="checkbox" :checked="editForm[candidate.CandidateID]" @click="onSelectedCandidateToAdd($event, candidate)"/></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div @submit.prevent="" v-if="ACTION != ACTION_ADD">
+                <template v-if="candidates.length < 1">Data is empty ...</template>
+                <div class="freeze-pane" id="lecturer-list" v-else>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th style="width: 100px;">ID</th>
+                            <th style="width: 200px;">Lecture</th>
+                            <th style="width: 160px;">Institution</th>
+                            <th style="width: 300px;">Academic Organization</th>
+                            <th style="width: 300px;">Department</th>
+                            <th style="width: 160px;">Behavioral Date</th>
+                            <th style="width: 160px;">Period</th>
+                            <th style="width: 240px;">Reason</th>
+                            <th style="width: 200px;">Current JKA</th>
+                            <th style="width: 160px;">Current Grade</th>
+                            <th style="width: 240px;">Next JKA</th>
+                            <th style="width: 240px;">Next Grade</th>
+                            <th style="width: 240px;">Status</th>
+                            <th style="width: 50px;">Note</th>
+                            <th><input type="checkbox" @click.stop="selectAllClicked"/></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(candidate, index) in candidates" style="height: 67px;">
+                            <td><div style="width: 100px;">{{ candidate.EMPLID }}</div></td>
+                            <td><div style="width: 200px;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
+                            <td><div style="width: 160px;">{{ institutions[candidate.Inst].InstName }}</div></td>
+                            <td><div style="width: 300px;">{{ candidate.AcadOrg }} - {{ candidate.AcadName }}</div></td>
+                            <td><div style="width: 300px;">{{ candidate.DepName }}</div></td>
+                            <td><div style="width: 160px;">{{ candidate.BehaviorDate || "-" }}</div></td>
+                            <td><div style="width: 160px;">{{ candidate.Period || "-" }}</div></td>
+                            <td><div style="width: 160px;">{{ candidate.Reason || "-" }}</div></td>
+                            <td><div style="width: 200px;">{{ candidate.CurrentJKA || "-" }}</div></td>
+                            <td><div style="width: 160px;">{{ candidate.CurrentGradeJKA }}</div></td>
+                            <td>
+                            <span class="custom-combobox" style="width: 240px;" v-if="disableStatus(candidate, false)">
+                                <select @change="candidate.NextJKA = $event.target.value;">
+                                    <option :value="desc" v-for="desc in levelDescs">
+                                        {{ desc }}
+                                    </option>
+                                </select>
+                                <span class="combobox-label">
+                                    {{ candidate.NextJKA }}
+                                </span>
+                            </span>
+                                <div v-else style="width: 240px;">
+                                    {{ candidate.NextJKA }}
+                                </div>
+                            </td>
+                            <td>
+                            <span class="custom-combobox" style="width: 240px;" v-if="disableStatus(candidate, false)">
+                                <select @change="candidate.NextGradeJKA = $event.target.value;editNextGradeJKA($event.target.value, candidate);">
+                                    <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA)">
+                                        {{ grade.N_JKA_ID }}
+                                    </option>
+                                </select>
+                                <span class="combobox-label">
+                                    {{ candidate.NextGradeJKA }}
+                                </span>
+                            </span>
+                                <div v-else style="width: 240px;">
+                                    {{ candidate.NextGradeJKA }}
+                                </div>
+                            </td>
+                            <td>
+                            <span class="custom-combobox" v-if="disableStatus(candidate)" style="width: 240px;">
+                                <select @change.prevent="changeStatus(candidate.CandidateID, $event.target.value);">
+                                    <option :value="status.StatusID" v-for="status in filterStatuses(candidate.StatusID, candidate.Period)">
+                                        {{ status.Status }}
+                                    </option>
+                                </select>
+                                <span class="combobox-label">
+                                    {{ statuses[candidate.StatusID - 1].Status }}
+                                </span>
+                            </span>
+                                <template v-else><div style="width: 240px;">{{ candidate.Status }}</div></template>
+                            </td>
+                            <td>
+                                <div style="width: 50px;">
+                                    <tooltip title="Click to see notes">
+                                        <i class="icon icon-widget-language-skill" style="cursor: pointer;" @click="popup.note = candidate.Note"></i>
+                                    </tooltip>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="checkbox" :checked="editForm[candidate.CandidateID]" @click="onEditChecked($event, candidate)" v-if="isCanEditStatus(candidate, false)"/>
+                                <input type="checkbox" disabled v-else/>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br>
+            <div class="button-group">
+                <nj-button v-if="Object.keys(editForm).length > 0 || Object.keys(candidatesToAdd).length > 0" @click="onSave" :is-processed="isSaving" display-text="SAVE" animation-color="white"></nj-button>
+                <template v-if="ACTION != ACTION_ADD">
+                    <nj-button @click="onPrintClicked" :is-processed="isPrinting" display-text="PRINT" animation-color="white"></nj-button>
+                    <nj-button v-if="!isPeriodNull()" @click="onPost" :is-processed="isPosting" display-text="POST" animation-color="white"></nj-button>    
+                </template>
+            </div>
+        </div>
+    </div>
+    <br>
+    <nj-popup @close="popup.note = null" v-if="popup.note != null">
+        <div class="p-wrapper shadow-xl" style="background-color: white;">
+            <div style="margin: 0;padding: 12px;min-width: 400px;max-width: 500px;">
+                <h4>Note : </h4>
+                <p>{{ popup.note }}</p>
+            </div>
+        </div>
+    </nj-popup>
+</div> 
+

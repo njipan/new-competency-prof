@@ -1,0 +1,1 @@
+C:/xampp-56/htdocs/BM5/newLecturer/view/competency-profiling.js

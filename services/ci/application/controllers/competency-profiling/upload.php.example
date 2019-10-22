@@ -1,0 +1,29 @@
+<?php
+require_once('BaseController.php');
+require_once('strategies/upload/AzureUpload.php');
+require_once('strategies/download/AzureDownload.php');
+require_once('requests/GeneralRequest.php');
+class Upload extends BaseController {
+
+	public function __construct(){
+		parent::__construct();
+	}
+
+	public function test(){
+		$uploadInstance = new AzureUpload($_FILES['doc']);
+		$filename = $uploadInstance->upload();
+		
+		return $this->load->view('json_view', [
+			'json' => $filename,
+		]);
+	}
+
+
+	public function download(){
+		$request = new GeneralRequest();
+		$data = $request->data();
+		$azureDownload = new AzureDownload();
+		return $azureDownload->prepare($data['fullpath'], 'TEST.zip')->download();
+	}
+
+}
