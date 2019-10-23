@@ -23,6 +23,18 @@ var subView = {
             sv.vue();
         });
     },
+    prepare: function(){
+        window.document.title = this.title;
+        $(".page-heading h1").text(this.title);
+        const $breadCrumbs = $("#BC_Caption");
+        while ($breadCrumbs.children().length > 1)
+          $breadCrumbs
+            .children()
+            .last()
+            .remove();
+        $breadCrumbs.append('<li><a href="#">Competency Profiling</a></li>');
+        $breadCrumbs.append("<li>" + this.title + "</li>");
+    },
     vue : function(){
         axios.defaults.baseURL = BM.serviceUri + 'competency-profiling';
         axios.defaults.headers.post['Content-Type'] = 'application/json';
@@ -89,32 +101,36 @@ var subView = {
             created: function(){
                 _self = this;
                 this.isFormLoading = true;
-                Promise.all([
-                    _self.getIntitutions(), 
-                    _self.getOrganizations(), 
-                    _self.getDepartments(), 
-                    _self.getPeriods(), 
-                    _self.getLevelDescs(),
-                    _self.getReasons(),
-                    _self.getStatuses()
-                ]).then(function(responses){
-                    var temp = {};
-                    $('#competency-profiling-loader').hide();
-                    _self.institutions = responses[0];
-                    _self.organizations = responses[1];
-                    _self.departments = responses[2];
-                    _self.periods = responses[3];
-                    _self.levelGrades = responses[4];
-                    _self.reasons = responses[5];
-                    _self.statuses = responses[6];
+                axios.post('staff/proxy_lrc').then(() => {
+                    Promise.all([
+                        _self.getIntitutions(), 
+                        _self.getOrganizations(), 
+                        _self.getDepartments(), 
+                        _self.getPeriods(), 
+                        _self.getLevelDescs(),
+                        _self.getReasons(),
+                        _self.getStatuses()
+                    ]).then(function(responses){
+                        var temp = {};
+                        $('#competency-profiling-loader').hide();
+                        _self.institutions = responses[0];
+                        _self.organizations = responses[1];
+                        _self.departments = responses[2];
+                        _self.periods = responses[3];
+                        _self.levelGrades = responses[4];
+                        _self.reasons = responses[5];
+                        _self.statuses = responses[6];
 
-                    _self.levelDescs = _self.levelGrades.reduce((result, item) => {
-                        if(!result.includes(item.Descr)) result.push(item.Descr);
-                        return result;
-                    }, []);
-                    _self.isFormLoading = false;
-                    $('.has-tooltip').binus_tooltip();
-                });
+                        _self.levelDescs = _self.levelGrades.reduce((result, item) => {
+                            if(!result.includes(item.Descr)) result.push(item.Descr);
+                            return result;
+                        }, []);
+                        _self.isFormLoading = false;
+                        $('.has-tooltip').binus_tooltip();
+                    });
+                }).catch(() => {
+                    BM.successMessage('You are not allowed to see this page', 'failed', () => { window.location.href = BM.baseUri; });
+                });                
             },
             watch : {
                 candidates : function(){
@@ -334,19 +350,38 @@ var subView = {
                     element.click();
                     element.remove();
                 },
+                preparePrint : function(){
+                    var _self = this;
+                    const data = _self.editForm;
+                    return Object.keys(data).reduce(function(acc, item){
+                        const temp = acc;
+                        temp.push({CandidateTrID : item});
+                        return temp;
+                    }, []);
+                },
                 onPrintClicked : function(){
                     var _self = this;
                     if(_self.isPrinting) return;
                     _self.isPrinting = true;
+                    const candidates = _self.preparePrint();
+                    const form = {
+                        period_id : _self.form.period.PeriodID,
+                        period_date : _self.form.period.Period || 'NULL',
+                        institution : _self.form.institution.Inst,
+                        organization : _self.form.organization.ACAD_ORG || '*',
+                        organization_name : _self.form.organization.DESCR || '*',
+                        department : _self.form.department.Dep || '*',
+                        department_name : _self.form.department.DepName || 'ALL',
+                    };
                     axios({
-                        params : _self.printData,
+                        data : { candidates, form },
                         url: 'candidate/report',
-                        method: 'GET',
-                        responseType: 'blob', // important
-                      })
-                    .then(res => {
+                        method: 'POST',
+                        responseType: 'blob',
+                    }).then(res => {
                         _self.isPrinting = false;
-                        _self.downloadFile(res.data, 'ListCandidateReport.xlsx');
+                        _self.downloadFile(res.data, `List Candidate Report - ${Date.now()}.xlsx`);
+                        _self.editForm = {};
                     }).catch(err => {
                         _self.isPrinting = false;
                     });

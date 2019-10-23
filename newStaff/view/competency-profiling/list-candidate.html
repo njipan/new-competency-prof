@@ -150,7 +150,7 @@
                     <table>
                         <thead>
                         <tr>
-                            <th style="width: 100px;">ID</th>
+                            <th style="width: 100px;">No</th>
                             <th style="width: 200px;">Lecture</th>
                             <th style="width: 200px;">Current JKA</th>
                             <th style="width: 160px;">Current Grade</th>
@@ -167,7 +167,7 @@
                         </thead>
                         <tbody>
                         <tr v-for="(candidate, index) in candidates" style="width: 67px;">
-                            <td><div style="width: 100px;">{{ candidate.Emplid }}</div></td>
+                            <td><div style="width: 100px;">{{ (index + 1) }}</div></td>
                             <td><div style="width: 200px;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
                             <td><div style="width: 200px;">{{ candidate.CurrentJKA || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.CurrentGradeJKA }}</div></td>
@@ -224,7 +224,7 @@
                     <table>
                         <thead>
                         <tr>
-                            <th style="width: 100px;">ID</th>
+                            <th style="width: 100px;">No</th>
                             <th style="width: 200px;">Lecture</th>
                             <th style="width: 160px;">Institution</th>
                             <th style="width: 300px;">Academic Organization</th>
@@ -243,7 +243,7 @@
                         </thead>
                         <tbody>
                         <tr v-for="(candidate, index) in candidates" style="height: 67px;">
-                            <td><div style="width: 100px;">{{ candidate.EMPLID }}</div></td>
+                            <td><div style="width: 100px;">{{ (index + 1) }}</div></td>
                             <td><div style="width: 200px;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
                             <td><div style="width: 160px;">{{ institutions[candidate.Inst].InstName }}</div></td>
                             <td><div style="width: 300px;">{{ candidate.AcadOrg }} - {{ candidate.AcadName }}</div></td>

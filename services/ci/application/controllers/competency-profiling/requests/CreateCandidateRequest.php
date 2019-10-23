@@ -18,15 +18,15 @@ class CreateCandidateRequest  extends AbstractRequest {
 		$reasons = $reasonRepo->all() ?: [];
 
     	if(empty($data['form']['period_id']) || empty($data['form']['institution']) || empty($data['form']['organization']) || empty($data['form']['department'])){
-    		return ['message' => 'Request parameter is invalid'];
+    		return ['message' => 'Data is invalid'];
     	}
     	foreach($data['data'] as $candidate){
     		if(empty($levels[$candidate['CurrentGradeJKA']]) || $levels[$candidate['CurrentGradeJKA']]->Descr != $candidate['CurrentJKA'])
-    			return ['message' => 'Request parameter is invalid'];
+    			return ['message' => 'Any data for current JKA is invalid'];
     		if(empty($levels[$candidate['NextGradeJKA']]) || $levels[$candidate['NextGradeJKA']]->Descr != $candidate['NextJKA'])
-    			return ['message' => 'Request parameter is invalid'];
+    			return ['message' => 'Any data for next JKA is invalid'];
     		if(empty($reasons[$candidate['ReasonID']]))
-    			return ['message' => 'Request parameter is invalid'];
+    			return ['message' => 'Any data for reason is invalid'];
     	}
 
         return [];

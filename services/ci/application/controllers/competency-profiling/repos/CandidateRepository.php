@@ -80,4 +80,11 @@ class CandidateRepository extends AbstractRepository{
         return $candidates->result();
     }
 
+    public function printCandidates($params){
+        if(!$candidates = $this->sp('bn_JKA_PrintCandidates', $params, self::$JKA_DB)){
+            return null;
+        }
+        return $candidates->result();
+    }
+
 }

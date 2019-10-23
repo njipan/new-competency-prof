@@ -11,7 +11,7 @@ class UpdateCandidateStatusRequest extends AbstractRequest {
         $status_id_to_be_changed = $this->request['status_id'];
         if(empty($candidate = $candidate_repo->getCandidateByID($candidate_id))){
             return [
-                'message' => 'Invalid parameter request',
+                'message' => 'Any data in request is invalid',
             ];
         }
 
@@ -28,7 +28,7 @@ class UpdateCandidateStatusRequest extends AbstractRequest {
         ];
         $rule_validate = !empty($rules[$candidate->StatusID]) && in_array($status_id_to_be_changed, $rules[$candidate->StatusID]);
         if(!$rule_validate){
-            $errors['message'] = 'Your request is not valid';
+            $errors['message'] = 'Status is not valid';
         }
         return $errors;
     }

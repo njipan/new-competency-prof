@@ -10,14 +10,14 @@ class UpdateJKACandidateRequest extends AbstractRequest {
     	try{
     		foreach ($data as $candidate_item) {
 	    		$candidate = $candidateRepository->getCandidateByID($data[0]['CandidateTrID']);
-	    		if(empty($candidate)) return ['message' => 'Data not found'];
-	    		if(strcasecmp($candidate_item['NextGradeJKA'], $candidate->NextGradeJKA) != 1) return ['message' => 'Request body is invalid'];
+	    		if(empty($candidate)) return ['message' => 'Some data not found'];
+	    		if(strcasecmp($candidate_item['NextGradeJKA'], $candidate->NextGradeJKA) != 1) return ['message' => 'Data next JKA is invalid'];
 	    	}	
 	    	return [];
     	}catch(\Exception $e){
-    		return ['message' => 'Request body is invalid'];
+    		return ['message' => 'Error occured when updating data'];
     	}
-        return ['message' => 'Request body is invalid'];
+        return ['message' => 'Error occured when updating data'];
     }
 
     public function transform(){
