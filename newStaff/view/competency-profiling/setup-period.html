@@ -36,9 +36,6 @@
                 </div>
                 <div>
                     <div class="row">
-                        <div v-show="isSending" class="page-screen rel" style="position: absolute;">
-                            <span class="loader"><span class="indicator"></span></span>
-                        </div>
                         <div class="column">
                             <label for="" class="form-label">Institution <span class="color-red">*</span></label>
                             <span class="custom-combobox">
@@ -64,7 +61,7 @@
                             <nj-datepicker 
                             v-model="form.startDate"
                             name="startDate"
-                            @input="onFormStartDateChanged"
+                            @input="dateChanged"
                             ></nj-datepicker>
                             <label class="label-message color-red">
                                 {{ errors.form.startDate || "&nbsp;" }}
@@ -77,7 +74,7 @@
                             <nj-datepicker 
                             v-model="form.endDate"
                             name="endDate"
-                            @input="onFormEndDateChanged"
+                            @input="dateChanged"
                             ></nj-datepicker>
                             <label class="label-message color-red">
                                 {{ errors.form.endDate || "&nbsp;" }}
@@ -115,7 +112,7 @@
                                 <nj-button @click.prevent="search" :is-processed="isSearching" display-text="SEARCH" animation-color="white"></nj-button>
                             </template>
                             <template v-if="ACTION != null">
-                                <nj-button @click="" :is-processed="false" :display-text="(ACTION == ACTION_CREATE ) ? 'CREATE' : 'SAVE'" animation-color="white"></nj-button>
+                                <nj-button @click="" :is-processed="isSending" :display-text="(ACTION == ACTION_CREATE ) ? 'CREATE' : 'SAVE'" animation-color="white"></nj-button>
                                 <nj-button @click.prevent="cancel" :is-processed="false" display-text="CANCEL" animation-color="white"></nj-button>
                             </template>
                         </div>
@@ -128,7 +125,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>No</th>
                             <th>Institution</th>
                             <th>Start Date</th>
                             <th>End Date</th>
@@ -137,8 +134,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="period in periods">
-                            <td>{{ period.PeriodID }}</td>
+                        <tr v-for="(period, index) in periods">
+                            <td>{{ (index+1) }}</td>
                             <td>{{ period.InstName }}</td>
                             <td>{{ period.Period }}</td>
                             <td>{{ period.PeriodEnd }}</td>

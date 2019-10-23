@@ -48,14 +48,14 @@ class Period extends BaseController {
         $periodRepository = new PeriodRepository();
         $data = $request->data();
         if(empty($data['id']) || !$period = $periodRepository->getByID($data['id'])){
-            return $this->httpRequestInvalid('Request is invalid');
+            return $this->httpRequestInvalid("Data is not valid");
         }
-        
         $params = [ 
             '_PeriodID' => $data['id'] ,
             '_User' => $_SESSION['employeeID'],
         ];
         $deleted_rows = $periodRepository->delete($params);
+        var_dump($deleted_rows);die;
         if(empty($deleted_rows)){
             return $this->httpRequestInvalid('Error occured when deleting data');
         }
@@ -104,9 +104,11 @@ class Period extends BaseController {
             ]);
         }
         $id = $_GET['id'];
-        $period = reset($this->sp('bn_JKA_GetPeriodById', [
-            '_PeriodID' => $id,
-        ], self::$JKA_DB)->result());
+        $periodRepository = new PeriodRepository();
+        $period = $periodRepository->getByID($id);
+        if(!$period){
+            return $this->httpRequestInvalid('Error occured when getting data');
+        }
 
         return $this->load->view("json_view",[
             'json' => $period,

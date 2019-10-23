@@ -5,22 +5,20 @@ var subView = {
     rel: 'competency-profiling-content',
     onLoaded: function() {
         sv = this;
-        this.onRequire();
-        $.fancybox.update();
-        let elTitle = $('#competency-profiling-title');
-        elTitle.text(elTitle.text() + ' - ' + sv.title);
-        $('.datepicker').bind('keypress keydown keyup',null,function(e){
-            event.preventDefault();
-        });
-        $('.custom-datepicker').binus_datepicker({
-			dateFormat:'dd-mm-yy',
-			autoclose: true,
-			changeYear  : true,
-			changeMonth : true,
-			onSelect:function(dateText){
-                $(this).val(dateText);
-			}
-        });
+        sv.onRequire();
+        sv.prepare();
+    },
+    prepare: function(){
+        window.document.title = this.title;
+        $(".page-heading h1").text(this.title);
+        const $breadCrumbs = $("#BC_Caption");
+        while ($breadCrumbs.children().length > 1)
+          $breadCrumbs
+            .children()
+            .last()
+            .remove();
+        $breadCrumbs.append('<li><a href="#">Competency Profiling</a></li>');
+        $breadCrumbs.append("<li>" + this.title + "</li>");
     },
     onRequire : function(){
         Promise.all([
@@ -92,7 +90,7 @@ var subView = {
             },
             methods : {
                 isEmpty : function(text){
-                    return typeof text == 'undefined' || text.trim() == '';
+                    return typeof text != 'string' || text.trim() == '';
                 },
                 onFormInstitutionChanged : function(e){
                     var _self = this;
@@ -103,13 +101,38 @@ var subView = {
                         return;
                     }
                 },
-                onFormStartDateChanged : function(e){
+                dateChanged : function(e){
                     var _self = this;
-                    let message = 'Must be selected';
+                    let errors = {};
+                    const startDate = moment(_self.form.startDate, "DD-MM-YYYY");
+                    const endDate = moment(_self.form.endDate, "DD-MM-YYYY");
+                    const isStartDateValid = startDate.isValid();
+                    const isEndDateValid = endDate.isValid();
                     delete _self.errors.form['startDate'];
-                    if(this.isEmpty(_self.form.startDate)){
-                        _self.errors.form = Object.assign(_self.errors.form, { startDate :  message });
-                        return;
+                    delete _self.errors.form['endDate'];
+                    
+                    if( _self.isEmpty(_self.form.startDate ) ){
+                        errors.startDate = 'Must be selected';
+                    }
+                    else if( !isStartDateValid ){
+                        errors.startDate = 'Must be selected';   
+                    }
+                    
+                    if( _self.isEmpty(_self.form.endDate )){
+                        errors.endDate = 'Must be selected';
+                    }
+                    else if( !isEndDateValid ){
+                        errors.endDate = 'Date is invalid';
+                    }
+                    _self.errors.form = Object.assign(_self.errors.form, errors);
+                    if( _self.isEmpty(_self.form.startDate) || _self.isEmpty(_self.form.endDate) ) return;
+                    const days = endDate.diff(startDate, 'days');
+                    if(days < 1){
+                        errors = {
+                            startDate : 'Date must be before end date',
+                            endDate : 'Date must be after start date'
+                        };
+                        _self.errors.form = Object.assign(_self.errors.form, errors);
                     }
                 },
                 onFormEndDateChanged : function(e){
@@ -250,8 +273,6 @@ var subView = {
                     const params = { id : period_id };
                     axios.get(`period/get`, { params })
                     .then((response) => {
-                        console.log(Object.assign({},_self.effdates));
-                        console.log(response.data.EffDt);
                         _self.ACTION = _self.ACTION_EDIT;
                         _self.isEdit = true;
                         _self.isSending = false;
@@ -266,6 +287,10 @@ var subView = {
                             effdate: _self.effdates.find((item) => item.Effdt == response.data.EffDt) || {},
                         };
                         _self.errors.form = {};
+                    }).catch(() => {
+                        _self.ACTION = null;
+                        _self.isEdit = false;
+                        _self.isSending = false;
                     });
                 },
                 cancel : function(){
@@ -274,10 +299,17 @@ var subView = {
                     _self.errors.form = {};
                     _self.resetFormData();
                 },
+                isNoErrors : function(){
+                    var _self = this;
+                    for(let error of Object.values({..._self.errors.form})){
+                        if(typeof error == 'string' && error.length > 0) return false;
+                    }
+                    return true;
+                },
                 submit: function(e){
                     var _self = this;
+                    if(_self.isSending || !_self.isNoErrors()) return;
 
-                    if(_self.isSending) return;
                     _self.isSending = true;
                     _self.errors.form = {};
                     if(_self.ACTION == _self.ACTION_CREATE){
