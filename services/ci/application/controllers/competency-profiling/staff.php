@@ -18,6 +18,7 @@ class Staff extends BaseController {
     }
 
     public function proxy_lrc_post(){
+        return;
     	$request = new GeneralRequest();
     	$staffRepo = new StaffRepository();
 

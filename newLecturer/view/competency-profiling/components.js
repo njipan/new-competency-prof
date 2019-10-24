@@ -27,7 +27,7 @@ function componentJS(){
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>No</th>
                             <th>Teaching Period</th>
                             <th>Course</th>
                             <th>Teaching Material</th>
@@ -37,7 +37,7 @@ function componentJS(){
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in items">
-                            <td>{{ item.TeachingTrID }}</td>
+                            <td>{{ (index + 1) }}</td>
                             <td>{{ item.TeachingPeriod }}</td>
                             <td>{{ item.Course }}</td>
                             <td>
@@ -59,7 +59,7 @@ function componentJS(){
                             <td>
                                 <span class="clickable color-blue" @click="teach = Object.assign({},item)">
                                     <i class="icon icon-edit"></i> &nbsp;
-                                </span>
+                                </span>&nbsp;
                                 <span class="clickable color-red" @click="onDelete(item.TeachingTrID)">
                                     <i class="icon icon-trash"></i>
                                 </span>
@@ -302,18 +302,19 @@ function componentJS(){
         template: `
             <div>
                 <div v-if="items.length < 1 && toefl == null">Please wait ... </div>
-                <div class="freeze-pane" data-fixed-left="1" data-fixed-right="0" data-height="300" v-else-if="toefl == null">
+                <div v-else-if="toefl == null">
+                    <h3 style="text-align: center;">List TOEFL</h3>
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>No</th>
                                 <th>Certificate</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in items" :key="item.ToeflID">
-                                <td>{{ item.ToeflID }}
+                                <td>{{ (index + 1) }}</td>
                                 <td>
                                     <a :title="getFileName(item.LocationFile)" @click.prevent="download(item)">
                                         <i class="icon icon-download"></i>
@@ -323,6 +324,7 @@ function componentJS(){
                                     <span class="clickable color-blue">
                                         <i class="icon icon-edit" @click="toefl = item;"></i> &nbsp;
                                     </span>
+                                    &nbsp;
                                     <span class="clickable color-red" @click="onDelete(item.ToeflID)">
                                         <i class="icon icon-trash"></i>
                                     </span>
@@ -535,7 +537,7 @@ function componentJS(){
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>No</th>
                             <th>Activity Name</th>
                             <th>Start Date</th>
                             <th>End Date</th>
@@ -545,7 +547,7 @@ function componentJS(){
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in items">
-                            <td>{{ item.ComdevTrID }}</td>
+                            <td>{{ (index + 1) }}</td>
                             <td>{{ item.ActivityName }}</td>
                             <td>{{ item.FormattedStartDt }}</td>
                             <td>{{ item.FormattedEndDt }}</td>
@@ -561,7 +563,7 @@ function componentJS(){
                             <td>
                                 <span class="clickable color-blue" @click="onUpdate(item)">
                                     <i class="icon icon-edit"></i> &nbsp;
-                                </span>
+                                </span>&nbsp;
                                 <span class="clickable color-red" @click="onDelete(item.ComdevTrID)">
                                     <i class="icon icon-trash"></i>
                                 </span>
@@ -690,7 +692,7 @@ function componentJS(){
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>No</th>
                             <th>Title</th>
                             <th>Research Year</th>
                             <th>Research Level</th>
@@ -710,7 +712,7 @@ function componentJS(){
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in items" :key="item.ResearchTrID">
-                            <td>{{ item.ResearchTrID }}</td>
+                            <td>{{ (index + 1) }}</td>
                             <td>{{ item.Title }}</td>
                             <td>{{ item.Year_Research }}</td>
                             <td>{{ item.Level }}</td>
@@ -736,7 +738,7 @@ function componentJS(){
                             <td>
                                 <span class="clickable color-blue" @click="onUpdate(item)">
                                     <i class="icon icon-edit"></i> &nbsp;
-                                </span>
+                                </span>&nbsp;
                                 <span class="clickable color-red" @click="onDelete(item.ResearchTrID)">
                                     <i class="icon icon-trash"></i>
                                 </span>

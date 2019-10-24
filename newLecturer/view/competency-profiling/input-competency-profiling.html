@@ -14,8 +14,8 @@
     .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc{
         text-align: center;
     }
-    
-    .cursor-pointer{
+
+    .cursor-pointer,.clickable{
         cursor: pointer;
     }
     .nj-tab{
@@ -41,7 +41,7 @@
     }
     .subtypes{
         margin: 0;
-        height: 864px;
+        height: 484px;
     }
 </style>
 <div id="input-competency-profiling-app">
@@ -683,7 +683,7 @@
         </div>
     </div>
     <template v-if="searchTypeState == TECHNICAL">
-        <nj-popup v-if="ACTION_TYPE == TYPE_SEARCH" @close="ACTION_TYPE = searchTypeState = modalTypeState = null;">
+        <nj-popup v-if="ACTION_TYPE == TYPE_SEARCH && dataSubTypes.length > 0" @close="ACTION_TYPE = searchTypeState = modalTypeState = null;">
             <div class="p-wrapper shadow-md" style="background-color: white;width: 600px;" @submit.prevent="">
                 <div class="row" style="margin: 0 !important;">
                     <div class="column">

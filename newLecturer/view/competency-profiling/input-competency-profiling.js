@@ -103,6 +103,12 @@ var subView = {
                     "jpg",
                     "jpeg",
                     "zip",
+                ],
+                toefl : [
+                    "pdf",
+                    "png",
+                    "jpg",
+                    "jpeg"
                 ]
             },
             dataToefl : {
@@ -433,7 +439,7 @@ var subView = {
                     insertUris[this.TEACHING_LEARNING] = 'teach/delete';
                     insertUris[this.RESEARCH] = 'research/delete';
                     insertUris[this.COMMUNITY_DEVELOPMENT] = 'comdev/delete';
-                    insertUris[this.TOEFL] = 'toefl/candidate';
+                    insertUris[this.TOEFL] = 'toefl/delete';
 
                     return insertUris[subtype];
                 },
@@ -473,7 +479,8 @@ var subView = {
                     var _self = this;
                     axios.post(_self.getUriDeleteFromSubType(type),{ id })
                     .then(res => {
-                        const filtered = _self.dataSubTypes.filter(item => item[column] != id);
+                        const filtered = _self.dataSubTypes.filter(item => item.ToeflID != id);
+                        _self.dataSubTypes = [];
                         _self.dataSubTypes = filtered;
                         _self.$nextTick(function(){
                             $(`.has-tooltip`).binus_tooltip();
@@ -484,7 +491,6 @@ var subView = {
                                 height      : 400    // default 300
                             });
                         });
-                        _self.dataSubTypes = [];
                         _self.onSubTypeClicked(_self.searchSubTypeState);
                         BM.successMessage('Data has been deleted', 'success', ()=>{});
                     }).catch(function(err){
@@ -499,8 +505,9 @@ var subView = {
                         },
                         data : { id }
                     }).then(res => {
+                        _self.dataSubTypes = [];
                        const filtered = _self.dataSubTypes.filter(item => item.ToeflID != id);
-                       _self.dataSubTypes = filtered;
+                       _self.dataSubTypes = [...filtered];
                     });
                 },
                 findMembershipStatus : function(id){
@@ -592,8 +599,9 @@ var subView = {
                     const _self = this;
                     _self.dataToefl.errors= {};
                     const file = e.target.files[0];
-                    const message = _self.validateFileCertificate(file);
-                    if(message) _self.dataToefl.errors= { certificate : message };
+                    const message = _self.validateFileCertificate(file, _self.fileRules.toefl);
+                    console.log(message);
+                    if(message) _self.dataToefl.errors = { certificate : message };
                 },
                 uploadToefl : function(){
                     var _self = this;
@@ -624,7 +632,6 @@ var subView = {
                         BM.successMessage('File has been uploaded', 'success', () => {});
                     })
                     .catch(error => {
-                        alert('File has been uploaded');
                         _self.dataToefl.isSubmitting = false;
                         _self.dataToefl.errors = error.response.data;
                     }); 

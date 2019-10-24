@@ -102,11 +102,11 @@ class Toefl extends BaseController {
         return null;
     }
 
-    public function candidate(){
+    public function delete(){
         return $this->restURIs(__FUNCTION__, true);
     }
 
-    public function candidate_delete(){
+    public function delete_post(){
         $_POST = $this->getBody();
         $errors = $this->validate_candidate_delete();
         if(!empty($errors)){
@@ -131,6 +131,10 @@ class Toefl extends BaseController {
         return $this->load->view('json_view', [
             'json' => 'success',
         ]);
+    }
+    
+    public function candidate(){
+        return $this->restURIs(__FUNCTION__, true);
     }
 
     public function validate_candidate_delete(){
