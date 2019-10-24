@@ -14,6 +14,18 @@
         #table-period{
             padding: 20px;
         }
+        .DTFC_LeftBodyLiner{
+            overflow: hidden;
+        }
+        .freeze-pane table tbody tr td, .freeze-table table tbody tr td,.freeze-pane table tbody tr th, .freeze-table table tbody tr th{
+            text-align: center;
+        }
+        .freeze-pane .dataTables_scroll .dataTables_scrollHead .dataTable thead tr th.sorting, .freeze-table .dataTables_scroll .dataTables_scrollHead .dataTable thead tr th.sorting{
+            text-align: center;
+        }
+        .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc{
+            text-align: center;
+        }
     </style>
     <div id="setup-period-app">
         <div class="search-filter-form">
@@ -122,7 +134,7 @@
         </div>
         <div id="table-period" class="search-filter-form" v-if="Array.isArray(periods) && periods.length > 0 && ACTION == null">
             <div class="freeze-pane">
-                <table>
+                <table class="border">
                     <thead>
                         <tr>
                             <th>No</th>

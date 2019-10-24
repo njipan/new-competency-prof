@@ -77,16 +77,21 @@ var subView = {
             data: initData,
             created : function(){
                 var _self = this;
-                Promise.all([
-                    this.getInstitutions(),
-                    this.getEffDates(),    
-                ]).then((responses) => {
-                    _self.institutions = responses[0].data;
-                    _self.effdates = responses[1].data;
-                    $('#competency-profiling-loader').hide();
+                axios.post('staff/proxy_lrc').then(() => {
+                    Promise.all([
+                        this.getInstitutions(),
+                        this.getEffDates(),    
+                    ]).then((responses) => {
+                        _self.institutions = responses[0].data;
+                        _self.effdates = responses[1].data;
+                        $('#competency-profiling-loader').hide();
+                    }).catch(() => {
+                        $('#competency-profiling-loader').hide();
+                    });
                 }).catch(() => {
-                    $('#competency-profiling-loader').hide();
-                });
+                    window.location.href = BM.baseUri;
+                    BM.successMessage('You are not allowed to see this page', 'failed', () => {});
+                });                
             },
             methods : {
                 isEmpty : function(text){

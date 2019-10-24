@@ -13,6 +13,23 @@
         background: rgba(255, 255, 255, 0.048);
         z-index: 100;
     }
+
+    .DTFC_LeftBodyLiner{
+        overflow: hidden;
+    }
+
+    .freeze-pane table tbody tr td, .freeze-table table tbody tr td,.freeze-pane table tbody tr th, .freeze-table table tbody tr th{
+        text-align: center;
+    }
+
+    .freeze-pane .dataTables_scroll .dataTables_scrollHead .dataTable thead tr th.sorting, .freeze-table .dataTables_scroll .dataTables_scrollHead .dataTable thead tr th.sorting{
+        text-align: center;
+    }
+
+    .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc{
+        text-align: center;
+    }
+
 </style>
 <div id="list-candidate-app">
     <div class="p-wrapper form-full search-filter-form">
@@ -79,7 +96,7 @@
                         <span class="custom-combobox">
                             <select v-model="form.department">
                                 <option :value="{}">ALL</option>
-                                <option v-for="department in departments" :value="department">
+                                <option v-for="department in filteredDepartments" :value="department">
                                     {{ department.Dep }} - {{ department.DepName }}
                                 </option>
                             </select>
@@ -147,11 +164,11 @@
             <div @submit.prevent="" v-if="ACTION == ACTION_ADD">
                 <template v-if="candidates.length < 1">Data is empty ...</template>
                 <div class="freeze-pane" data-fixed-left="1" data-fixed-right="0" data-height="300" v-else>
-                    <table>
+                    <table class="bordered">
                         <thead>
                         <tr>
-                            <th style="width: 100px;">No</th>
-                            <th style="width: 200px;">Lecture</th>
+                            <th style="width: 32px;">No</th>
+                            <th style="width: 250px;">Lecture</th>
                             <th style="width: 200px;">Current JKA</th>
                             <th style="width: 160px;">Current Grade</th>
                             <th style="width: 240px;">Next JKA</th>
@@ -162,13 +179,13 @@
                             <th style="width: 160px;">Behavioral Date</th>
                             <th style="width: 160px;">Period</th>
                             <th style="width: 240px;">Reason</th>
-                            <th><input type="checkbox" @click="selectAllClicked"/></th>
+                            <th><input type="checkbox" @click="selectAllCandidateClicked"/></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr v-for="(candidate, index) in candidates" style="width: 67px;">
-                            <td><div style="width: 100px;">{{ (index + 1) }}</div></td>
-                            <td><div style="width: 200px;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
+                            <td><div style="width: 32px;">{{ (index + 1) }}</div></td>
+                            <td><div style="width: 250px;overflow: hidden;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
                             <td><div style="width: 200px;">{{ candidate.CurrentJKA || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.CurrentGradeJKA }}</div></td>
                             <td>
@@ -197,7 +214,7 @@
                             </td>
                             <td><div style="width: 160px;">{{ institutions[candidate.Inst].InstName }}</div></td>
                             <td><div style="width: 300px;">{{ candidate.AcadOrg }} - {{ candidate.AcadName }}</div></td>
-                            <td><div style="width: 300px;">{{ candidate.DepName }}</div></td>
+                            <td><div style="width: 300px;">{{ candidate.DepName || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.BehaviorDate || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ form.period.Period || "-" }}</div></td>
                             <td>
@@ -212,7 +229,7 @@
                                     </span>
                                 </span>
                             </td>
-                            <td><input type="checkbox" :checked="editForm[candidate.CandidateID]" @click="onSelectedCandidateToAdd($event, candidate)"/></td>
+                            <td><input type="checkbox" :checked="checkedCandidates[candidate.LecturerCode]" @click="onSelectedCandidateToAdd($event, candidate)"/></td>
                         </tr>
                         </tbody>
                     </table>
@@ -221,11 +238,11 @@
             <div @submit.prevent="" v-if="ACTION != ACTION_ADD">
                 <template v-if="candidates.length < 1">Data is empty ...</template>
                 <div class="freeze-pane" id="lecturer-list" v-else>
-                    <table>
+                    <table class="bordered">
                         <thead>
                         <tr>
-                            <th style="width: 100px;">No</th>
-                            <th style="width: 200px;">Lecture</th>
+                            <th style="width: 32px;">No</th>
+                            <th style="width: 250px;">Lecture</th>
                             <th style="width: 160px;">Institution</th>
                             <th style="width: 300px;">Academic Organization</th>
                             <th style="width: 300px;">Department</th>
@@ -243,13 +260,13 @@
                         </thead>
                         <tbody>
                         <tr v-for="(candidate, index) in candidates" style="height: 67px;">
-                            <td><div style="width: 100px;">{{ (index + 1) }}</div></td>
-                            <td><div style="width: 200px;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
+                            <td><div style="width: 32px;">{{ (index + 1) }}</div></td>
+                            <td><div style="width: 250px;overflow: hidden;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
                             <td><div style="width: 160px;">{{ institutions[candidate.Inst].InstName }}</div></td>
                             <td><div style="width: 300px;">{{ candidate.AcadOrg }} - {{ candidate.AcadName }}</div></td>
-                            <td><div style="width: 300px;">{{ candidate.DepName }}</div></td>
-                            <td><div style="width: 160px;">{{ candidate.BehaviorDate || "-" }}</div></td>
-                            <td><div style="width: 160px;">{{ candidate.Period || "-" }}</div></td>
+                            <td><div style="width: 300px;">{{ candidate.DepName || "-" }}</div></td>
+                            <td><div style="width: 160px;">{{ candidate.FormattedBehaviorDate || "-" }}</div></td>
+                            <td><div style="width: 160px;">{{ candidate.Period || "NULL" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.Reason || "-" }}</div></td>
                             <td><div style="width: 200px;">{{ candidate.CurrentJKA || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.CurrentGradeJKA }}</div></td>

@@ -77,6 +77,7 @@ var subView = {
             popup : {
                 note : null,
             },
+            checkedCandidates : {},
             searchText : null,
             isSaving : false,
             printData : {},
@@ -129,7 +130,8 @@ var subView = {
                         $('.has-tooltip').binus_tooltip();
                     });
                 }).catch(() => {
-                    BM.successMessage('You are not allowed to see this page', 'failed', () => { window.location.href = BM.baseUri; });
+                    window.location.href = BM.baseUri;
+                    BM.successMessage('You are not allowed to see this page', 'failed', () => {});
                 });                
             },
             watch : {
@@ -288,14 +290,22 @@ var subView = {
                         _self.isSearching = false;
                     });
                 },
-                selectAllCandidateClicked: function(){
-                    var _self = this;                    
-                    const selected = _self.candidates.reduce((res, data) => {
-                        const temp = res;
-                        temp[data.CandidateID] = true;
-                        return temp;
-                    }, {});
-                    _self.editForm = {...selected };
+                selectAllCandidateClicked: function(e){
+                    var _self = this;
+                    if(e.target.checked){
+                        var checkedCandidates = {};
+                        const selected = _self.candidates.reduce((res, candidate) => {
+                            checkedCandidates[candidate.LecturerCode] = true;
+                            const temp = res;
+                            res.push(_self.addCandidateFactory(candidate));
+                            return temp;
+                        }, []);
+                        _self.candidatesToAdd = [ ...selected ];
+                        _self.checkedCandidates = { ...checkedCandidates };
+                    }else{
+                        _self.candidatesToAdd = [];
+                        _self.checkedCandidates = {};
+                    }
                 },
                 selectedToEditFactory : function(candidate){
                     return { CandidateTrID : candidate.CandidateID, NextGradeJKA : candidate.NextGradeJKA, LecturerCode : candidate.LecturerCode, Name : candidate.Name };
@@ -308,7 +318,7 @@ var subView = {
                         temp[data.CandidateID] = _self.selectedToEditFactory(data);
                         return temp;
                     }, {});
-                    _self.editForm = {...selected };
+                    _self.editForm = { ...selected };
                 },
                 selectAllClicked : function(e){
                     var _self = this;
@@ -386,22 +396,27 @@ var subView = {
                         _self.isPrinting = false;
                     });
                 },
+                addCandidateFactory : function(candidate){
+                    return { 
+                        LecturerCode : candidate.LecturerCode,
+                        CurrentJKA : candidate.CurrentJKA,
+                        CurrentGradeJKA : candidate.CurrentGradeJKA,
+                        NextJKA : candidate.NextJKA,
+                        NextGradeJKA : candidate.NextGradeJKA,
+                        ReasonID : candidate.ReasonID
+                    };
+                },
                 onSelectedCandidateToAdd : function(e, candidate){
                     var _self = this;
                     if (e.target.checked) {
-                        _self.candidatesToAdd.push({ 
-                            LecturerCode : candidate.LecturerCode,
-                            CurrentJKA : candidate.CurrentJKA,
-                            CurrentGradeJKA : candidate.CurrentGradeJKA,
-                            NextJKA : candidate.NextJKA,
-                            NextGradeJKA : candidate.NextGradeJKA,
-                            ReasonID : candidate.ReasonID
-                        });
+                        _self.candidatesToAdd.push(_self.addCandidateFactory(candidate));
+                        _self.checkedCandidates[candidate.LecturerCode] = true;
                     }
                     else{
                         _self.candidatesToAdd = _self.candidatesToAdd.filter(item => (
                             item.LecturerCode != candidate.LecturerCode
                         ));
+                        delete _self.checkedCandidates[candidate.LecturerCode];
                     }
                 },
                 onSave : function(){
@@ -498,6 +513,9 @@ var subView = {
                     axios.get('candidate/add', { params }).then(res => {
                         _self.isAddCandidateSearching = false;
                         _self.candidates = res.data;
+                        if([..._self.candidates].length < 1){
+                            BM.successMessage('No data found', 'failed', () => {});
+                        }
                     }).catch(err => {
                         _self.isAddCandidateSearching = false;
                         _self.errors = err.response.data;
@@ -537,6 +555,13 @@ var subView = {
                             candidate.Dep.match(filterRgx) || 
                             candidate.DepName.match(filterRgx) || 
                             candidate.Reason.match(filterRgx);
+                    });
+                },
+                filteredDepartments(){
+                    var _self = this;
+                    var org = _self.form.organization.ACAD_ORG;
+                    return _self.departments.filter((dep) => {
+                        return dep.Org == org;
                     });
                 }
             }

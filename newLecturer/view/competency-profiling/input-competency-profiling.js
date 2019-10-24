@@ -650,12 +650,10 @@ var subView = {
                         _self.researchLevels = result[3];
                         _self.membershipStatuses = result[4];
                     });
-                }).catch(err => {
+                }).catch(() => {
                     _self.isPageLoaded = false;
-                    alert('You are not allowed');
-                    //redirect to
-                });
-                
+                    BM.successMessage('You are not allowed to see this page', 'failed', () => { window.location.href = BM.baseUri; });
+                }); 
             }
         });  
     }

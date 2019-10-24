@@ -1,6 +1,47 @@
 <style>
+    .DTFC_LeftBodyLiner{
+        overflow: hidden;
+    }
+
+    .freeze-pane table tbody tr td, .freeze-table table tbody tr td,.freeze-pane table tbody tr th, .freeze-table table tbody tr th{
+        text-align: center;
+    }
+
+    .freeze-pane .dataTables_scroll .dataTables_scrollHead .dataTable thead tr th.sorting, .freeze-table .dataTables_scroll .dataTables_scrollHead .dataTable thead tr th.sorting{
+        text-align: center;
+    }
+
+    .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc{
+        text-align: center;
+    }
+    
     .cursor-pointer{
         cursor: pointer;
+    }
+    .nj-tab{
+        display: flex;
+        margin-bottom: -1px;
+        z-index: 1;
+        position: relative;
+    }
+    .nj-tab-header{
+        cursor: pointer;
+        padding: 15px 20px;
+        font-size: 12px;
+        border: 1px solid #c9c9c9;
+        border-left: 0px solid #c9c9c9;
+        background-color: white;
+    }
+    .nj-tab-header:first-child{
+        border-left: 1px solid #c9c9c9;
+    }
+    .nj-tab-header.focus{
+        background-color: #f6f6f6;
+        border-bottom: 1px solid #f6f6f6;
+    }
+    .subtypes{
+        margin: 0;
+        height: 864px;
     }
 </style>
 <div id="input-competency-profiling-app">
@@ -605,19 +646,19 @@
             <nj-button @click="saveForm" :is-processed="isSubmitting" display-text="Save" animation-color="white"></nj-button>
         </div>
     </div>
-    <div class="p-wrapper search-filter-form" v-if="searchTypeState == ACADEMIC && dataSubTypes.length > 0">
-        <div>
-            <a @click.prevent="onSubTypeClicked(TEACHING_LEARNING)" :class="{ clicked : searchSubTypeState == TEACHING_LEARNING }">
-                Teaching Learning
-            </a> &nbsp;
-            <a @click.prevent="onSubTypeClicked(RESEARCH)" :class="{ clicked : searchSubTypeState == RESEARCH }">
-                Research
-            </a> &nbsp;
-            <a @click.prevent="onSubTypeClicked(COMMUNITY_DEVELOPMENT)" :class="{ clicked : searchSubTypeState == COMMUNITY_DEVELOPMENT }">
-                Community Development
-            </a>    
+    <div v-if="searchTypeState == ACADEMIC && dataSubTypes.length > 0" class="nj-tab">
+        <div class="nj-tab-header" @click.prevent="onSubTypeClicked(TEACHING_LEARNING)"
+         :class="{ focus : searchSubTypeState == TEACHING_LEARNING }">
+            TEACHING LEARNING
         </div>
-        <br>
+        <div class="nj-tab-header" @click.prevent="onSubTypeClicked(RESEARCH)" :class="{ focus : searchSubTypeState == RESEARCH }">
+            RESEARCH
+        </div>
+        <div class="nj-tab-header" @click.prevent="onSubTypeClicked(COMMUNITY_DEVELOPMENT)" :class="{ focus : searchSubTypeState == COMMUNITY_DEVELOPMENT }">
+            COMMUNITY DEVELOPMENT
+        </div>
+    </div>
+    <div class="p-wrapper search-filter-form subtypes" v-if="searchTypeState == ACADEMIC && dataSubTypes.length > 0">
         <div>
             <list-research 
                 @delete="onDeleted($event, RESEARCH, 'ResearchTrID')" 
@@ -639,9 +680,7 @@
                 v-if="searchSubTypeState == COMMUNITY_DEVELOPMENT" 
                 :items="dataSubTypes">
             </list-community-development>
-            
         </div>
-
     </div>
     <template v-if="searchTypeState == TECHNICAL">
         <nj-popup v-if="ACTION_TYPE == TYPE_SEARCH" @close="ACTION_TYPE = searchTypeState = modalTypeState = null;">

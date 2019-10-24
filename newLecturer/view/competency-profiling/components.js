@@ -1,22 +1,17 @@
 
 function downloadFile(file){
     const material_id = file.MaterialID;
-    axios({
-        data : { id : material_id },
-        url: 'material/download',
-        method: 'POST',
-        responseType: 'blob',
-    })
-    .then(res => {
-        const url = window.URL.createObjectURL(new Blob([res.data]));
-        const element = document.createElement('a');
-        const filename = file.LocationFile;
-        element.href = url;
-        element.setAttribute('download', filename);
-        document.body.appendChild(element);
-        element.click();
-        element.remove();
-    }).catch(err => {});
+    const form = document.createElement('form');
+    form.setAttribute('action', `${BM.serviceUri}competency-profiling/material/download`);
+    form.setAttribute('method', `post`);
+    const input = document.createElement('input');
+    input.setAttribute('type', 'hidden');
+    input.setAttribute('name', 'id');
+    input.setAttribute('value', material_id);
+    document.body.appendChild(form);
+    form.appendChild(input);
+    form.submit();
+    form.remove();
 }
 
 function componentJS(){
@@ -301,7 +296,7 @@ function componentJS(){
                     _self.formUpdate.errors = err.response.data
                 });
             },
-        },
+        }
     });
     Vue.component('list-toefl', {
         template: `
@@ -725,7 +720,7 @@ function componentJS(){
                             <td>{{ item.PublisherName }}</td>
                             <td>{{ item.Volume }}</td>
                             <td>{{ item.Number }}</td>
-                            <td>{{ item.ISSN_ISSBN }}</td>
+                            <td>{{ item.ISSN_ISBN }}</td>
                             <td>{{ item.Year_Journal }}</td>
                             <td>{{ item.PublicationTitle }}</td>
                             <td>{{ item.PublicationYear }}</td>

@@ -24,23 +24,23 @@ class Candidate extends BaseController {
         parent::__construct();
     }
 
+    private function isValidRequestForInputPage($user){
+        $repo = new CandidateRepository();
+        $candidate = $repo->getCandidateByLecturerCode($user);
+        return !empty($candidate) && $candidate->StatusID == self::$STATUS_ON_PROCESS;
+    }
+
     public function proxy(){
         return $this->restUris(__FUNCTION__, true);
     }
 
     public function proxy_get(){
-        $repo = new CandidateRepository();
         $lecturer_code = $this->getLecturerCode();
-        $candidate = $repo->getCandidateByLecturerCode($lecturer_code);
-        if(empty($candidate)){
+        if(!$this->isValidRequestForInputPage($lecturer_code)){
+            $this->httpRequestInvalid('You are not allowed');
             http_response_code(401);
-            return $this->load->view('json_view', [
-                'json' => 'You\'re not allowed',
-            ]);
+            return;
         }
-        return $this->load->view('json_view', [
-            'json' => 'OK',
-        ]);
     }
 
     public function report(){
@@ -293,7 +293,6 @@ class Candidate extends BaseController {
             ]);
         }
         $params = $request->transform();
-        
         $candidates = $candidateRepo->saveMultiple($request->transform());
         if(empty($candidates)){
             return $this->httpRequestInvalid('Error occured when saving data');
