@@ -1,1 +1,315 @@
-C:/xampp-56/htdocs/BM5/newLecturer/view/competency-profiling.html
+<style>
+    a[disabled] { pointer-events: none; }
+    .p-wrapper{
+        padding: 16px;
+        margin : 24px 0;
+        position: relative;
+    }
+    .color-red{
+        color: #E74C3c;
+    }
+    .label-message{
+        margin: 8px 0;
+        text-transform: none;
+        transition: .2s all ease-in;
+    }
+    .page-screen{
+        width : 100vw;
+        height: 100vh;
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: white;
+        justify-content: center;
+        align-items: center;
+        z-index: 40;
+        flex-direction: column-reverse;
+    }
+    .page-screen.rel{
+        position: absolute;
+        height: 100%;
+        width: 100%;
+    }
+    .vue-app{
+        margin-bottom: 16px;
+    }
+    .shadow{
+        box-shadow: 0 0px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+    .shadow-md{
+        box-shadow: 0 0px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .shadow-lg{
+        box-shadow: 0 0px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .shadow-xl{
+        box-shadow: 0 0px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .shadow-2xl{
+        box-shadow: 0 5px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    .form-full{
+        width : 100%;
+        box-sizing: border-box;
+        margin : 24px auto;
+    }
+    .loader.center{
+        text-align: center;
+    }
+    .nj-loading{
+        font-size: 0;
+        display: inline-block;
+    }
+    .nj-loading.absolute{
+        position: absolute;
+    }
+    .nj-loading.secondary > .item{
+        background-color: white;
+    }
+    .nj-loading > .item{
+        display: inline-block;
+        background-color: #63aadd;
+        animation: nj-loading-anim 1.2s linear infinite;       
+    }
+    .nj-loading.xs > .item{
+        width: 3px;
+        height: 6px;
+        margin: 0 1.5px;
+    }
+    .nj-loading.s > .item{
+        width: 4px;
+        height: 10px;
+        margin: 0 2px;
+    }
+    .nj-loading.m > .item{
+        width: 8px;
+        height: 16px;
+        margin: 0 4px;  
+    }
+    .nj-loading.l > .item{
+        width: 12px;
+        height: 26px;
+        margin: 0 6px;  
+    }
+    .nj-loading > .item:nth-child(1){
+        animation-delay: 0;
+    }
+    .nj-loading > .item:nth-child(2){
+        animation-delay: .1s;
+    }
+    .nj-loading > .item:nth-child(3){
+        animation-delay: .2s;
+    }
+    .form-dynamic{
+        margin: 16px 0;
+    }
+    .form-dynamic:first-child{
+        margin-top: 0;
+    }
+    .form-dynamic:last-child{
+        margin-bottom: 0;
+    }
+    @keyframes nj-loading-anim{
+        0% { transform: scale(1.5);}
+        20% { opacity: 1; }
+        60%,100% { transform: scale(.5); opacity: 0;}
+    }
+    .label-message{
+        text-align: left;
+    }
+    .form-group{
+        margin-top: 10px;
+        margin-bottom: 10px;
+        display: block;
+    }
+    .loading-label{
+        margin: 16px;
+        font-size: 16px;
+    }
+    .form-dynamic{
+        transition: .5s all ease-in;
+        padding: 16px;
+    }
+    .hide{
+        display: none;
+    }
+    .mini-message{
+        font-size: 8px;
+        letter-spacing: 1px;
+        font-style: italic;
+    }
+    .icon-box{
+        padding: 6px;
+        font-size: 14px;
+        color: #4db0e0;
+        cursor: pointer;
+    }
+    .fill-between{
+        display: flex;
+        justify-content: space-between;
+    }
+    .button.auto{
+        min-width: 0 !important;
+    }
+    .filter-primary-color{
+        filter : invert(70%) sepia(36%) saturate(1324%) hue-rotate(164deg) brightness(160%) contrast(55%) !important;
+    }
+    .filter-danger-color{
+        filter: invert(16%) sepia(98%) saturate(6146%) hue-rotate(358deg) brightness(103%) contrast(127%) !important;
+    }
+    .icon-minimize{
+        width: 20px;
+        height: 20px;
+        background-color: #63aadd;
+        color: white;
+        position: relative;
+    }
+    .icon-minimize:after{
+        content: '-';
+        position: absolute;
+        top: 0;
+    }
+    .nj-dropdown-list{
+      position: relative;
+    }
+    .nj-dropdown-list > .dropdown{
+      position : absolute;
+      width : 100%;
+      box-sizing : border-box;
+      z-index : 100;
+      max-height: 0px;
+      overflow-y: scroll;
+      background-color: white;
+      border: 1px solid #c9c9c9;
+      border-top: none;
+      transition: all .2s ease-out;
+    }
+    .nj-dropdown-list > .dropdown.any{
+        max-height: 156px;
+    }
+    .nj-dropdown-list > .dropdown > .item{
+      border-bottom: 1px solid whitesmoke;
+      padding : 8px 10px;
+      width : 100%;
+      box-sizing: border-box;
+      cursor: pointer;
+      background-color: white;
+    }
+    .nj-dropdown-list > .dropdown > .item:last-child{
+      border-bottom: none;
+    }
+    .nj-dropdown-list > .dropdown > .item:hover{
+       background-color: rgba(0,0,0,.03);
+       color: #333333;
+    }
+    .nj-dropdown-list > input[type=text].any:focus{
+        border: 1px solid #c9c9c9;
+        border-top: none;
+    }
+    .nj-dropdown-list > input[type=text].any{
+        border-bottom: none;
+    }
+    .nj-dropdown-list > input[type=text] {
+        box-sizing : border-box;
+        width : 100%;
+        padding : 6px 10px;
+    }
+    .fade-enter-active, .fade-leave-active {
+        transition: opacity .3s;
+    }
+    .fade-enter, .fade-leave-to {
+        opacity: 0;
+    }
+    .nj-popup{
+        background-color: #ffffffb0;
+        z-index: 100;
+    }
+    .freeze-table-wrapper{
+        width: 100%;
+        overflow-x: hidden; 
+        overflow-y: auto;
+    }
+    .nj-freeze-pane{
+        position: relative;
+        display: inline-flex;
+        overflow: hidden;
+        overflow-y: auto;
+        height: 100%;
+        min-width: 100%;
+    }
+    .nj-freeze-pane table tr th{
+        padding: 13px;
+        position: sticky;
+    }
+    .nj-freeze-pane table tr td{
+        padding: 0 13px;   
+    }
+    .nj-freeze-pane table tr td,.nj-freeze-pane table tr th{
+        height: 24px;
+        white-space: nowrap;
+    }
+    .nj-freeze-pane .left-column{
+        z-index: 1;
+        width: auto;
+    }
+    .nj-freeze-pane .dynamic-column{
+        min-width: 100%;
+        overflow: hidden;
+        position: relative;
+    }
+    .freeze-table-wrapper{
+        position: relative;
+    }
+    .nj-scrollbar{
+        width: 100%;
+        height: 4px;
+        background-color:#eaeaea;
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+    .nj-scrollbar > .stick{
+        height: 30px;
+        background-color: transparent;
+        position: absolute;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: -12px;
+    }
+    .nj-scrollbar > .stick:after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 6px;
+        background-color: #34aee2;
+        border-radius: 6px;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>
+<div class="site-content" id="site-content">
+    <section class="page-heading">
+        <div class="container">
+            <div>
+                <h1 class="page-title" id="competency-profiling-title">Competency Profiling</h1>
+            </div>
+        </div>
+    </section>
+    <section class="breadcrumb">
+        <div class="container">
+            <div class="wrap">
+                <ul id="BC_Caption">
+                    <li><a href="#/index">Home</a></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    <div class="main-content has-widget" id="main-content">
+        <div class="container">
+            <div class="box-container">
+                <div id="competency-profiling-content" style="margin-bottom: 16px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
