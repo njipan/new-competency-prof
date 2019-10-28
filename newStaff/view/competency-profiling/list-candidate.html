@@ -255,6 +255,7 @@
                             <th style="width: 240px;">Next Grade</th>
                             <th style="width: 240px;">Status</th>
                             <th style="width: 50px;">Note</th>
+                            <th style="width: 50px;">Action</th>
                             <th><input type="checkbox" @click.stop="selectAllClicked"/></th>
                         </tr>
                         </thead>
@@ -319,6 +320,11 @@
                                         <i class="icon icon-widget-language-skill" style="cursor: pointer;" @click="popup.note = candidate.Note"></i>
                                     </tooltip>
                                 </div>
+                            </td>
+                            <td style="width: 50px;">
+                                <span style="cursor: pointer;" @click.prevent="deleteCandidate(candidate.CandidateID)">
+                                    <i class="icon icon-trash"></i>
+                                </span>
                             </td>
                             <td>
                                 <input type="checkbox" :checked="editForm[candidate.CandidateID]" @click="onEditChecked($event, candidate)" v-if="isCanEditStatus(candidate, false)"/>

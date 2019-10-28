@@ -87,4 +87,15 @@ class CandidateRepository extends AbstractRepository{
         return $candidates->result();
     }
 
+    public function delete($id){
+        $params = [ 
+            '_UserUp' => $_SESSION['employeeID'],
+            '_CandidateID' => $id,
+        ];
+        if(!$candidate = $this->sp('bn_JKA_DeleteCandidateByID', $params, self::$JKA_DB)){
+            return null;            
+        }
+        return $this->handleReturn($candidate);
+    }
+
 }

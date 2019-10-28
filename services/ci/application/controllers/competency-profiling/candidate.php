@@ -30,6 +30,35 @@ class Candidate extends BaseController {
         return !empty($candidate) && $candidate->StatusID == self::$STATUS_ON_PROCESS;
     }
 
+    public function delete(){
+        return $this->restUris(__FUNCTION__, true);
+    }
+
+    public function delete_post(){
+        $lecturer_code = $this->getLecturerCode();
+        if(!$this->isValidRequestForInputPage($lecturer_code)){
+            $this->httpRequestInvalid('You are not allowed');
+            http_response_code(401);
+            return;
+        }
+        $request = new GeneralRequest();
+        $data = $request->data();
+        if(empty($data['id'])){
+            $this->httpRequestInvalid('Request parameter is invalid');
+            return;   
+        }
+        $candidate_id = $data['id'];
+        $candidateRepo = new CandidateRepository();
+        $candidate = $candidateRepo->delete($candidate_id);
+        if(empty($candidate)){
+            $this->httpRequestInvalid('Data is not valid');
+            return;   
+        }   
+        return $this->load->view('json_view', [
+            'json' => $candidate
+        ]);
+    }
+
     public function proxy(){
         return $this->restUris(__FUNCTION__, true);
     }

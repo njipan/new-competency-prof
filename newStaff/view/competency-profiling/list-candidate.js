@@ -149,6 +149,25 @@ var subView = {
                 }
             },
             methods : {
+                deleteCandidate : function(candidate_id){
+                    if(confirm('Are you sure want to delete?') == false) return;
+                    var _self = this;
+                    const data = { id : candidate_id };
+                    axios.post('candidate/delete', data)
+                    .then(res => {
+                        var candidates = [..._self.candidates].filter(candidate => candidate.CandidateID != candidate_id);
+                        if(res.data.length < 1){
+                            BM.successMessage('Data not valid', 'failed', () => {});
+                            return;    
+                        }
+                        BM.successMessage('Data has been deleted', 'success', () => {
+                            _self.candidates = [];
+                            setTimeout(function(){
+                                _self.candidates = candidates;
+                            }, 500);    
+                        });
+                    }).catch(err => {});
+                },
                 isCanEditStatus : function(candidate, isPeriod=true){
                     var _self = this;
                     const rules = [

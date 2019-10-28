@@ -422,11 +422,8 @@
                                 </label>
                             </div>
                             <div class="column two-thirds">
-                                <div style="display: flex;align-items: center;">
-                                    <span style="display: block;padding: 8px;border: 1px solid #c9c9c9;border-right: none;background-color:white;">Rp </span>
-                                    <input type="text" v-model="item.budget" :name="`${item.id}[budget]`" data-field="budget" 
+                                <input type="text" v-model="item.budget" :name="`${item.id}[budget]`" data-field="budget" 
                                     @input="item.errors.budget = validateRequireText(item.budget);">
-                                </div>
                                 <label class="label-message color-red">
                                     {{ item.errors.budget }}
                                 </label>
