@@ -422,8 +422,8 @@
                                 </label>
                             </div>
                             <div class="column two-thirds">
-                                <input type="text" v-model="item.budget" :name="`${item.id}[budget]`" data-field="budget" 
-                                    @input="item.errors.budget = validateRequireText(item.budget);">
+                                <input type="text" v-model="item.budget" :name="`${item.id}[budget]`" data-field="budget"
+                                 @input="item.errors.budget = validateRequireText(item.budget);">
                                 <label class="label-message color-red">
                                     {{ item.errors.budget }}
                                 </label>

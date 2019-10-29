@@ -83,6 +83,7 @@ var subView = {
             printData : {},
             candidatesToAdd : [],
             isAddCandidateSearching : false,
+            isDeleting : false,
             statuses : [],
             STATUS_OPEN : 1,
             STATUS_WAITING : 2,
@@ -130,8 +131,9 @@ var subView = {
                         $('.has-tooltip').binus_tooltip();
                     });
                 }).catch(() => {
-                    window.location.href = BM.baseUri;
-                    BM.successMessage('You are not allowed to see this page', 'failed', () => {});
+                    BM.successMessage('You are not allowed to see this page', 'failed', () => {
+                        window.location.href = BM.baseUri;
+                    });
                 });                
             },
             watch : {
@@ -149,6 +151,26 @@ var subView = {
                 }
             },
             methods : {
+                onDeleteCandidates : function(){
+                    var _self = this;
+                    if(confirm('Are you sure want to delete selected data?') == false){
+                        return;
+                    }
+                    if(Object.keys(_self.editForm).length < 1){
+                        BM.successMessage('No data selected', 'failed', () => {});
+                        return;
+                    }
+                    _self.isDeleting = true;
+                    axios.post('candidate/deletes', Object.values(_self.editForm)).then(res => {
+                        BM.successMessage('Selected data has been deleted', 'success', () => {});
+                        _self.isDeleting = false;
+                        _self.editForm = {};
+                        _self.ACTION = null;
+                    })
+                    .catch(err => {
+                        _self.isDeleting = false;
+                    });
+                },
                 deleteCandidate : function(candidate_id){
                     if(confirm('Are you sure want to delete?') == false) return;
                     var _self = this;
@@ -540,9 +562,18 @@ var subView = {
                         _self.errors = err.response.data;
                     });
                 },
-                filterLevelGrades : function(text){
-                    return this.levelGrades.filter(item => {
-                        return item.Descr == text
+                filterLevelGrades : function(text, based=null){
+                    let grades = this.levelGrades;
+                    let start = 100;
+                    for(let idx in grades){
+                        if(grades[idx].N_JKA_ID == based){
+                            start = idx;
+                            break;
+                        }
+                    }
+                    grades = [...grades].slice(start, 99);
+                    return [...grades].filter(item => {
+                        return item.Descr == text;
                     });
                 },
                 filterStatuses(current_status, period='') {

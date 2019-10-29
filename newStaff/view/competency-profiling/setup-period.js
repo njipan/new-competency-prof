@@ -89,8 +89,9 @@ var subView = {
                         $('#competency-profiling-loader').hide();
                     });
                 }).catch(() => {
-                    window.location.href = BM.baseUri;
-                    BM.successMessage('You are not allowed to see this page', 'failed', () => {});
+                    BM.successMessage('You are not allowed to see this page', 'failed', () => {
+                        window.location.href = BM.baseUri;
+                    });
                 });                
             },
             methods : {

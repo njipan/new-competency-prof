@@ -8,6 +8,7 @@ require_once('requests/UpdateCandidateStatusRequest.php');
 require_once('requests/UpdateJKACandidateRequest.php');
 require_once('requests/PostCandidateRequest.php');
 require_once('requests/PrintCandidateRequest.php');
+require_once('requests/DeleteMultipleCandidateRequest.php');
 
 require_once('repos/CandidateRepository.php');
 
@@ -28,6 +29,39 @@ class Candidate extends BaseController {
         $repo = new CandidateRepository();
         $candidate = $repo->getCandidateByLecturerCode($user);
         return !empty($candidate) && $candidate->StatusID == self::$STATUS_ON_PROCESS;
+    }
+
+    public function deletes(){
+        return $this->restUris(__FUNCTION__, true);
+    }
+
+    public function deletes_post(){
+        $lecturer_code = $this->getLecturerCode();
+        if(!$this->isValidRequestForInputPage($lecturer_code)){
+            $this->httpRequestInvalid('You are not allowed');
+            http_response_code(401);
+            return;
+        }
+
+        $request = new DeleteMultipleCandidateRequest();
+        $data = $request->data();
+        $errors = $request->getErrors();
+        if(!empty($errors)){
+            http_response_code(422);
+            return $this->load->view('json_view', [
+                'json' => $errors
+            ]);
+        }
+        $params = $request->transform();
+        $candidateRepo = new CandidateRepository();
+        $candidates = $candidateRepo->deletes($params);
+        if(empty($candidates) || count($candidates) != count($data)){
+            $this->httpRequestInvalid('Error occured when deleting data. Please check you candidate is appropriate');
+            return;   
+        }   
+        return $this->load->view('json_view', [
+            'json' => $candidates
+        ]);
     }
 
     public function delete(){

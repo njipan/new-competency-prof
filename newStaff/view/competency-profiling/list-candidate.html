@@ -289,7 +289,7 @@
                             <td>
                             <span class="custom-combobox" style="width: 240px;" v-if="disableStatus(candidate, false)">
                                 <select @change="candidate.NextGradeJKA = $event.target.value;editNextGradeJKA($event.target.value, candidate);">
-                                    <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA)">
+                                    <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA, candidate.NextGradeJKA)">
                                         {{ grade.N_JKA_ID }}
                                     </option>
                                 </select>
@@ -337,7 +337,9 @@
             </div>
             <br>
             <div class="button-group">
-                <nj-button v-if="Object.keys(editForm).length > 0 || Object.keys(candidatesToAdd).length > 0" @click="onSave" :is-processed="isSaving" display-text="SAVE" animation-color="white"></nj-button>
+                <nj-button v-if="Object.keys(editForm).length > 0 || Object.keys(candidatesToAdd).length > 0" @click="onSave" :is-processed="isSaving" display-text="SAVE" 
+                    animation-color="white"></nj-button>
+                <nj-button v-if="Object.keys(editForm).length > 0" @click="onDeleteCandidates" :is-processed="isDeleting" display-text="DELETE" animation-color="white"></nj-button>
                 <template v-if="ACTION != ACTION_ADD">
                     <nj-button @click="onPrintClicked" :is-processed="isPrinting" display-text="PRINT" animation-color="white"></nj-button>
                     <nj-button v-if="!isPeriodNull()" @click="onPost" :is-processed="isPosting" display-text="POST" animation-color="white"></nj-button>    

@@ -98,4 +98,18 @@ class CandidateRepository extends AbstractRepository{
         return $this->handleReturn($candidate);
     }
 
+    public function select($params){
+        if(!$candidates = $this->sp('bn_JKA_GetSpecificCandidates', $params, self::$JKA_DB)){
+            return null;            
+        }
+        return $candidates->result();
+    }
+
+    public function deletes($params){
+        if(!$candidates = $this->sp('bn_JKA_DeleteMultipleCandidates', $params, self::$JKA_DB)){
+            return null;            
+        }
+        return $candidates->result();
+    }
+
 }
