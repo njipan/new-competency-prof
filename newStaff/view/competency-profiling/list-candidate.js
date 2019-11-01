@@ -43,6 +43,7 @@ var subView = {
             (error) => {
                 if(typeof error.response.data.message == 'string')
                     BM.successMessage(error.response.data.message,'failed', () => {});
+                delete error.response.data.message;
                 return Promise.reject(error);
             }
         );
@@ -96,7 +97,8 @@ var subView = {
             IS_ASKING_UPDATE : false,
             IS_ASKING_ADD : false,
             isPosting : false,
-        }
+            candidateErrors : {}
+        };
         listCandidateApp = new Vue({
             el: '#list-candidate-app',
             data: initData,
@@ -132,7 +134,7 @@ var subView = {
                     });
                 }).catch(() => {
                     BM.successMessage('You are not allowed to see this page', 'failed', () => {
-                        window.location.href = BM.baseUri;
+                        window.location.href = `${BM.baseUri}newstaff`;
                     });
                 });                
             },
@@ -151,6 +153,20 @@ var subView = {
                 }
             },
             methods : {
+                filterJKA : function(jka){
+                    console.log('sadfdsasadf');
+                    var _self = this;
+                    let temp = [..._self.levelDescs] || [];
+                    let idx = 0;
+                    
+                    for(let item in temp){
+                        if(temp[item].toLowerCase() == jka.toLowerCase()){
+                            idx = item; 
+                            break;
+                        }
+                    }
+                    return temp.slice(idx, 5);
+                },
                 onDeleteCandidates : function(){
                     var _self = this;
                     if(confirm('Are you sure want to delete selected data?') == false){
@@ -304,6 +320,10 @@ var subView = {
                 },
                 searchClicked : function(){
                     var _self = this;
+                    _self.candidatesToAdd = [];
+                    _self.editForm = {};
+                    _self.checkedCandidates = {};
+                    _self.candidateErrors = {};
                     if(_self.isSearching) return;
                     _self.editForm = {};
                     _self.isSearching = true;
@@ -480,11 +500,13 @@ var subView = {
                             _self.isSaving = false;
                             _self.candidatesToAdd = [];
                             _self.candidates = [];
-                            _self.editForm = {};
+                            _self.checkedCandidates = {};
                             BM.successMessage('Data has been saved', 'success', () => {});
                         })
                         .catch(err => {
                             _self.isSaving = false;
+                            if(typeof err.response.data.candidates == 'undefined') return;
+                            _self.candidateErrors = { ...err.response.data.candidates };
                         });
                     }
                     else if(_self.ACTION ==  _self.ACTION_EDIT){
@@ -500,6 +522,8 @@ var subView = {
                         })
                         .catch(err => {
                             _self.isSaving = false;
+                            if(typeof err.response.data.candidates == 'undefined') return;
+                            _self.candidateErrors = { ...err.response.data.candidates };
                         });
                     }
                 },

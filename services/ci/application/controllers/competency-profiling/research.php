@@ -15,7 +15,7 @@ class Research extends BaseController {
     public function __construct(){
         parent::__construct();
         $this->lecturer_code = $this->getLecturerCode();
-        $this->allowed_types['supportingMaterials'] = '*';
+        $this->allowed_types['supportingMaterials'] = ['pdf', 'png', 'jpg', 'jpeg', 'zip'];
     }
 
     public function levels(){
@@ -59,7 +59,7 @@ class Research extends BaseController {
         if(empty($_POST['id'])){
             return $this->httpRequestInvalid();
         }
-        $errors = $this->validate_update_post();
+        $errors = $this->validate_update_post($request);
 
         if(!empty($errors)){
             http_response_code(422);
@@ -140,7 +140,7 @@ class Research extends BaseController {
         ]);
     }
 
-    public function validate_update_post(){
+    public function validate_update_post($request){
         $errors = [];
         if(empty($_POST['year'])){
             $errors['year'] = "Can't be empty";
@@ -197,7 +197,37 @@ class Research extends BaseController {
             $errors['publicationYear'] = "Must be numeric";
         }
 
+        $files = $request->getFile();
+        unset($files['supportingMaterials']);
+        $allowed_types = $this->allowed_types['supportingMaterials'];
+        foreach($files as $key => $supporting_material_files){
+            foreach ($supporting_material_files as $file) {
+                if($file['size'] > 0){
+                    if(!$this->checkMimeType($file, $allowed_types)){
+                        $errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
+                        break;
+                    } 
+                }
+            }
+        }
+        $supporting_material_files = $request->getFile('supportingMaterials');
+        foreach($supporting_material_files as $file){
+            if($file['size'] > 0){
+                if(!$this->checkMimeType($file, $allowed_types)){
+                    $errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
+                    break;
+                } 
+            }
+        }
+
         return $errors;
+    }
+
+    public function checkMimeType($file, $allowed_types=[]){
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        if(empty($allowed_types)) return true;
+        if(!in_array($ext, $allowed_types)) return false;
+        return true;
     }
 
     public function delete(){

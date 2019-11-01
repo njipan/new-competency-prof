@@ -43,6 +43,9 @@
         margin: 0;
         height: 484px;
     }
+    .cursor-download{
+        cursor: pointer;
+    }
 </style>
 <div id="input-competency-profiling-app">
     <div class="p-wrapper search-filter-form">
@@ -138,35 +141,37 @@
         </form>
     </div>
     <nj-popup v-if="ACTION_TYPE == TYPE_CREATE && modalTypeState == TOEFL" @close="onCloseUploadToefl">
-        <form :ref="TOEFL" class="form-dynamic shadow-md" style="background-color: white;width: 450px;" @submit.prevent="">
-            <h3 style="text-align: center;text-transform: uppercase;">Upload TOEFL Certificarte</h3>
-            <div class="row">
-                <div class="form-group clearfix">
-                    <div class="column one-third">
-                        <label class="side" for="">Choose File <span class="color-red">*</span>
-                            <br> 
-                            <span class="mini-message">Pilih file</span>
-                        </label>
-                    </div>
-                    <div class="column two-thirds" style="overflow: hidden;">
-                        <input type="file"
-                        name="certificate"                                 
-                        data-field="certificate"
-                        @change="fileCertificateChanged($event)"
-                        >
-                        <button @click.prevent="resetFile(null, $event);dataToefl.errors={};">Clear</button>
-                        <label class="label-message color-red">                                    
-                            {{ dataToefl.errors.certificate }}
-                        </label>
+        <form :ref="TOEFL" class="shadow-md" style="background-color: white;width: 450px; padding: 20px;" @submit.prevent="">
+            <div class="search-filter-form" style="padding-bottom: 20px;margin-bottom: 0;">
+                <h3 style="text-align: center;text-transform: uppercase;">Upload TOEFL Certificarte</h3>
+                <div class="row">
+                    <div class="form-group clearfix">
+                        <div class="column one-third">
+                            <label class="side" for="">Choose File <span class="color-red">*</span>
+                                <br> 
+                                <span class="mini-message">Pilih file</span>
+                            </label>
+                        </div>
+                        <div class="column two-thirds" style="overflow: hidden;">
+                            <input type="file"
+                            name="certificate"                                 
+                            data-field="certificate"
+                            @change="fileCertificateChanged($event)"
+                            >
+                            <button @click.prevent="resetFile(null, $event);dataToefl.errors={};">Clear</button>
+                            <label class="label-message color-red">                                    
+                                {{ dataToefl.errors.certificate }}
+                            </label>
+                        </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="column" style="text-align: right;">
+                        <nj-button @click="uploadToefl" :is-processed="dataToefl.isSubmitting" display-text="Upload" animation-color="white">
+                        </nj-button>
+                    </div>
+                </div> 
             </div>
-            <div class="row">
-                <div class="column" style="text-align: right;">
-                    <nj-button @click="uploadToefl" :is-processed="dataToefl.isSubmitting" display-text="Upload" animation-color="white">
-                    </nj-button>
-                </div>
-            </div> 
         </form>
     </nj-popup>
     <div class="p-wrapper search-filter-form" v-if="ACTION_TYPE == TYPE_CREATE && (formTypeState != '' && formTypeState != null)">
@@ -681,8 +686,8 @@
     </div>
     <template v-if="searchTypeState == TECHNICAL">
         <nj-popup v-if="ACTION_TYPE == TYPE_SEARCH && dataSubTypes.length > 0" @close="ACTION_TYPE = searchTypeState = modalTypeState = null;">
-            <div class="p-wrapper shadow-md" style="background-color: white;width: 600px;" @submit.prevent="">
-                <div class="row" style="margin: 0 !important;">
+            <div class="p-wrapper shadow-md" style="background-color: white;width: 450px;padding-bottom: 20px;" @submit.prevent="">
+                <div class="row search-filter-form" style="margin: 0 !important;padding-bottom: 20px;">
                     <div class="column">
                         <list-toefl 
                             :validate-certificate="validateFileCertificate" 

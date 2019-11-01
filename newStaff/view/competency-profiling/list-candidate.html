@@ -29,6 +29,23 @@
     .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting, .freeze-pane .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-pane .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_LeftHeadWrapper .dataTable thead tr th.sorting_asc, .freeze-table .DTFC_RightHeadWrapper .dataTable thead tr th.sorting_asc{
         text-align: center;
     }
+    .row-error:before {
+        content: 'error';
+    }
+    .row-error{
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 4px;
+        background-color: #e74c4c;
+        margin-top: -20px;
+        margin-left: -8px;
+        padding: 1px 4px;
+        font-size: 8px;
+        color: white;
+        letter-spacing: 1px;
+    }
 
 </style>
 <div id="list-candidate-app">
@@ -186,12 +203,17 @@
                         <tr v-for="(candidate, index) in candidates" style="width: 67px;">
                             <td><div style="width: 32px;">{{ (index + 1) }}</div></td>
                             <td><div style="width: 250px;overflow: hidden;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
-                            <td><div style="width: 200px;">{{ candidate.CurrentJKA || "-" }}</div></td>
+                            <td>
+                                <div style="width: 200px;position: relative;">
+                                    {{ candidate.CurrentJKA || "-" }}
+                                    <span class="row-error" v-if="typeof candidateErrors[candidate.LecturerCode] != 'undefined'"></span>
+                                </div>
+                            </td>
                             <td><div style="width: 160px;">{{ candidate.CurrentGradeJKA }}</div></td>
                             <td>
                                 <span class="custom-combobox" style="width: 240px;">
                                     <select @change="candidate.NextJKA = $event.target.value;">
-                                        <option :value="desc" v-for="desc in levelDescs">
+                                        <option :value="desc" v-for="desc in filterJKA(candidate.NextJKAForFilter)">
                                             {{ desc }}
                                         </option>
                                     </select>
@@ -203,7 +225,7 @@
                             <td>
                                 <span class="custom-combobox" style="width: 240px;">
                                     <select @change="candidate.NextGradeJKA = $event.target.value;">
-                                        <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA)">
+                                        <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA, candidate.NextGradeJKA)">
                                             {{ grade.N_JKA_ID }}
                                         </option>
                                     </select>
@@ -216,7 +238,12 @@
                             <td><div style="width: 300px;">{{ candidate.AcadOrg }} - {{ candidate.AcadName }}</div></td>
                             <td><div style="width: 300px;">{{ candidate.DepName || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.BehaviorDate || "-" }}</div></td>
-                            <td><div style="width: 160px;">{{ form.period.Period || "-" }}</div></td>
+                            <td>
+                                <div style="width: 160px;position: relative;">
+                                    {{ form.period.Period || "-" }}
+                                    <span class="row-error" v-if="typeof candidateErrors[candidate.LecturerCode] != 'undefined'"></span>
+                                </div>
+                            </td>
                             <td>
                                 <span class="custom-combobox" style="width: 240px;">
                                     <select @change="candidate.ReasonID = $event.target.value;">
@@ -262,7 +289,11 @@
                         <tbody>
                         <tr v-for="(candidate, index) in candidates" style="height: 67px;">
                             <td><div style="width: 32px;">{{ (index + 1) }}</div></td>
-                            <td><div style="width: 250px;overflow: hidden;">{{ candidate.LecturerCode }} - {{ candidate.Name }}</div></td>
+                            <td>
+                                <div style="width: 250px;overflow: hidden;">
+                                    {{ candidate.LecturerCode }} - {{ candidate.Name }}
+                                </div>
+                            </td>
                             <td><div style="width: 160px;">{{ institutions[candidate.Inst].InstName }}</div></td>
                             <td><div style="width: 300px;">{{ candidate.AcadOrg }} - {{ candidate.AcadName }}</div></td>
                             <td><div style="width: 300px;">{{ candidate.DepName || "-" }}</div></td>
@@ -274,8 +305,8 @@
                             <td>
                             <span class="custom-combobox" style="width: 240px;" v-if="disableStatus(candidate, false)">
                                 <select @change="candidate.NextJKA = $event.target.value;">
-                                    <option :value="desc" v-for="desc in levelDescs">
-                                        {{ desc }}
+                                    <option :value="desc" v-for="desc in filterJKA(candidate.NextJKAForFilter)">
+                                        {{ desc }} -
                                     </option>
                                 </select>
                                 <span class="combobox-label">
@@ -302,17 +333,22 @@
                                 </div>
                             </td>
                             <td>
-                            <span class="custom-combobox" v-if="disableStatus(candidate)" style="width: 240px;">
-                                <select @change.prevent="changeStatus(candidate.CandidateID, $event.target.value);">
-                                    <option :value="status.StatusID" v-for="status in filterStatuses(candidate.StatusID, candidate.Period)">
-                                        {{ status.Status }}
-                                    </option>
-                                </select>
-                                <span class="combobox-label">
-                                    {{ statuses[candidate.StatusID - 1].Status }}
+                                <span class="custom-combobox" v-if="disableStatus(candidate)" style="width: 240px;">
+                                    <select @change.prevent="changeStatus(candidate.CandidateID, $event.target.value);">
+                                        <option :value="status.StatusID" v-for="status in filterStatuses(candidate.StatusID, candidate.Period)">
+                                            {{ status.Status }}
+                                        </option>
+                                    </select>
+                                    <span class="combobox-label">
+                                        {{ statuses[candidate.StatusID - 1].Status }}
+                                    </span>
                                 </span>
-                            </span>
-                                <template v-else><div style="width: 240px;">{{ candidate.Status }}</div></template>
+                                <template v-else>
+                                    <div style="width: 240px;position: relative;">
+                                        {{ candidate.Status }}
+                                        <span class="row-error" v-if="typeof candidateErrors[candidate.CandidateID] != 'undefined'"></span>
+                                    </div>
+                                </template>
                             </td>
                             <td>
                                 <div style="width: 50px;">

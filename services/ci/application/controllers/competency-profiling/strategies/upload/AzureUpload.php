@@ -33,7 +33,7 @@ class AzureUpload implements Uploadable {
 	}
 
 	public function generateFilename(){
-		return $_SESSION['employeeID'].'_'.date('d-m-Y.H_i_s').'.'.pathinfo($this->file['name'], PATHINFO_EXTENSION);
+		return $_SESSION['employeeID'].'_'.random_int(111111, 999999).'_'.date('d-m-Y.H_i_s').'.'.pathinfo($this->file['name'], PATHINFO_EXTENSION);
 	}
     
     public function directory(){

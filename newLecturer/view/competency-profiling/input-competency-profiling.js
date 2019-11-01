@@ -108,7 +108,8 @@ var subView = {
                     "pdf",
                     "png",
                     "jpg",
-                    "jpeg"
+                    "jpeg",
+                    "zip",
                 ]
             },
             dataToefl : {
@@ -126,7 +127,11 @@ var subView = {
             isPageLoaded : true,
             isSubmitting : false,
             regexDate : /^([0-2][0-9]|(3)[0-1])(-)(((0)[0-9])|((1)[0-2]))(-)\d{4}$/i,
-            isGeneralFetching : false
+            isGeneralFetching : false,
+            filtered : {
+                items : ['01-ACAD', '02-TECH'],
+                subitems : ['COMDEV','RSCH','TEACH','TOEFL']
+            }
         };
         inputCompetencyProfilingApp = new Vue({
             el: '#input-competency-profiling-app',
@@ -651,15 +656,17 @@ var subView = {
                         _self.getMembershipStatuses()
                     ]).then(function(result){
                         _self.isPageLoaded = false;
-                        _self.itemTypes = result[0];
+                        _self.itemTypes = [...result[0]].filter(item => _self.filtered.items.includes(item.N_ITEM_ID) );
                         _self.periods = result[1];
-                        _self.itemSubTypes = result[2];
+                        _self.itemSubTypes = [...result[2]].filter(item => _self.filtered.subitems.includes(item.N_SUBITEM_ID) );
                         _self.researchLevels = result[3];
                         _self.membershipStatuses = result[4];
                     });
                 }).catch(() => {
                     _self.isPageLoaded = false;
-                    BM.successMessage('You are not allowed to see this page', 'failed', () => { window.location.href = BM.baseUri; });
+                    BM.successMessage('You are not allowed to see this page', 'failed', () => { 
+                        window.location.href = `${BM.baseUri}newlecturer`;
+                    });
                 }); 
             }
         });  

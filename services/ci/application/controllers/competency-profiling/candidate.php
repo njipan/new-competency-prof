@@ -11,6 +11,8 @@ require_once('requests/PrintCandidateRequest.php');
 require_once('requests/DeleteMultipleCandidateRequest.php');
 
 require_once('repos/CandidateRepository.php');
+require_once('repos/StaffRepository.php');
+
 
 class Candidate extends BaseController {
 
@@ -31,13 +33,18 @@ class Candidate extends BaseController {
         return !empty($candidate) && $candidate->StatusID == self::$STATUS_ON_PROCESS;
     }
 
+    private function isValidRequestForLRC($user){
+        $repo = new StaffRepository();
+        $candidate = $repo->isStaffLRC($user);
+        return $candidate;
+    }
+
     public function deletes(){
         return $this->restUris(__FUNCTION__, true);
     }
 
     public function deletes_post(){
-        $lecturer_code = $this->getLecturerCode();
-        if(!$this->isValidRequestForInputPage($lecturer_code)){
+        if(!$this->isValidRequestForLRC($_SESSION['employeeID'])){
             $this->httpRequestInvalid('You are not allowed');
             http_response_code(401);
             return;
@@ -69,8 +76,7 @@ class Candidate extends BaseController {
     }
 
     public function delete_post(){
-        $lecturer_code = $this->getLecturerCode();
-        if(!$this->isValidRequestForInputPage($lecturer_code)){
+        if(!$this->isValidRequestForLRC($_SESSION['employeeID'])){
             $this->httpRequestInvalid('You are not allowed');
             http_response_code(401);
             return;
@@ -381,8 +387,11 @@ class Candidate extends BaseController {
         $candidateRepo = new CandidateRepository();
         $request = new UpdateJKACandidateRequest();
         $errors = $request->getErrors();
-        if(!empty($errors['message'])){
-            return $this->httpRequestInvalid($errors['message']);
+        if(!empty($errors)){
+            http_response_code(422);
+            return $this->load->view('json_view', [
+                'json' => $errors,
+            ]);
         }
         $params = $request->transform();
         $candidates = $candidateRepo->updateJKAMultiples($params);

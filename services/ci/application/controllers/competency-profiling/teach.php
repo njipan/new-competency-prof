@@ -18,8 +18,8 @@ class Teach extends BaseController {
 
         $this->candidate_id = 21;
         $this->lecturer_code = $this->getLecturerCode();
-        $this->allowed_types["additionalMaterials"] = '*';
-        $this->allowed_types["teachingForm"] = '*';
+        $this->allowed_types["additionalMaterials"] = ['pdf', 'mp4', 'mpeg', 'docx', 'zip'];
+        $this->allowed_types["teachingForm"] = ['pdf', 'ppt', 'zip'];
     }
 
     public function update(){
@@ -31,9 +31,9 @@ class Teach extends BaseController {
         if(empty($_POST['id'])){
             return $this->httpRequestInvalid();
         }
-        $errors = $this->validate_update_post();
-
+        $errors = $this->validate_update_post($request);
         if(!empty($errors)){
+            http_response_code(422);
             return $this->load->view('json_view', [
                 'json' => $errors,
             ]);
@@ -95,11 +95,8 @@ class Teach extends BaseController {
         $additionalMaterials = $request->getFile('additionalMaterials');
         foreach($additionalMaterials as $file){
             if($file['size'] > 0){
-                $file_location = $this->uploadFile(
-                    $file, 
-                    $this->getLecturerCode(),
-                    $this->allowed_types["additionalMaterials"]
-                );
+                $uploadInstance = new AzureUpload($file);
+                $file_location = $uploadInstance->upload();
             }
             $result_material = $this->sp('bn_JKA_InsertMaterial',[
                 '_UserIn' => $this->getLecturerCode(),
@@ -119,15 +116,53 @@ class Teach extends BaseController {
         ]);
     }
 
-    public function validate_update_post(){
+    public function validate_update_post($request){
+        $data = $request->data();
+        $file_teaching_form = $request->getFile('teachingForm')[0];
         $errors = [];
-        if(empty($_POST['teachingPeriod'])){
+        if(empty($data['teachingPeriod'])){
             $errors['teachingPeriod'] = "Can't be empty";
         }
-        if(empty($_POST['course'])){
+        if(empty($data['course'])){
             $errors['course'] = "Can't be empty";
         }
+        
+        $files = $request->getFile();
+        if(isset($files['teachingForm']) && $file_teaching_form['size'] > 0){
+            $allowed_types = $this->allowed_types['teachingForm'];
+            if(!$this->checkMimeType($file_teaching_form, $allowed_types)){
+                $errors['teachingForm'] = 'Only accept '.implode(", ", $allowed_types).' files';
+            }
+        }
+        if(!empty($files['additionalMaterials'])){
+            $allowed_types = $this->allowed_types['additionalMaterials'];
+            $additional_material_files = $files['additionalMaterials'];
+            foreach ($additional_material_files as $file) {
+                if(!$this->checkMimeType($file, $allowed_types)){
+                    $errors['additionalMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
+                }   
+            }
+        }
+        unset($files['teachingForm']);
+        if(!empty($files)){
+            $allowed_types = $this->allowed_types['additionalMaterials'];
+            foreach($files as $additionalMaterials){
+                if(empty($additionalMaterials[0]['size'])) break;
+                foreach ($additionalMaterials as $file) {
+                    if(!$this->checkMimeType($file, $allowed_types)){
+                        $errors['additionalMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
+                    }   
+                }
+            }
+        }
         return $errors;
+    }
+
+    public function checkMimeType($file, $allowed_types=[]){
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        if(empty($allowed_types)) return true;
+        if(!in_array($ext, $allowed_types)) return false;
+        return true;
     }
 
     public function delete(){

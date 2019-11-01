@@ -1,6 +1,8 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 require_once('BaseController.php');
 
+require_once('strategies/upload/AzureUpload.php');
+
 class Toefl extends BaseController {
     
     static protected $JKA_DB = 'JKA_DB';
@@ -9,7 +11,7 @@ class Toefl extends BaseController {
         parent::__construct();
 
         $this->allowed_types= [
-            "certificate" => ['png', 'jpeg', 'jpg', 'pdf'],
+            "certificate" => ['png', 'jpeg', 'jpg', 'pdf','zip'],
         ];
         $this->candidate_id = 21;
         $this->lecturer_code = $this->getLecturerCode();
@@ -35,6 +37,7 @@ class Toefl extends BaseController {
                 'json' => $errors,
             ]);
         }
+
         $toefl = $this->getToeflById($_POST['id']);
         if(empty($toefl)){
             return $this->httpRequestInvalid('Toefl not found');
@@ -42,7 +45,8 @@ class Toefl extends BaseController {
         if($this->lecturer_code != $toefl->UserIn){
             return $this->httpRequestInvalid('You are not allowed');
         }
-        $file_location = $this->uploadFile($_FILES['certificate'], $this->lecturer_code, $this->allowed_types["certificate"]);
+        $uploadInstance = new AzureUpload($_FILES['certificate']);
+        $file_location = $uploadInstance->upload();
         $result_material = $this->sp('bn_JKA_InsertMaterial',[
             '_UserIn' => $this->lecturer_code,
             '_LocationFile' => $file_location,

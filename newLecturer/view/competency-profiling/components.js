@@ -41,7 +41,7 @@ function componentJS(){
                             <td>{{ item.TeachingPeriod }}</td>
                             <td>{{ item.Course }}</td>
                             <td>
-                                <a :title="getFileName(item.TeachingMaterialLocation)" @click.prevent="download({ MaterialID : item.MaterialID, LocationFile : item.TeachingMaterialLocation })">
+                                <a class="cursor-download" :title="getFileName(item.TeachingMaterialLocation)" @click.prevent="download({ MaterialID : item.MaterialID, LocationFile : item.TeachingMaterialLocation })">
                                     <i class="icon icon-download"></i>
                                 </a>
                             </td>
@@ -49,7 +49,7 @@ function componentJS(){
                                 <template v-if="typeof item.AdditionalMaterials == 'undefined' || item.AdditionalMaterials.length < 1">Empty</template>
                                 <template v-else>
                                     <template v-for="file in item.AdditionalMaterials">
-                                        <a :title="getFileName(file.LocationFile)" @click.prevent="download(file)">
+                                        <a :title="getFileName(file.LocationFile)" @click.prevent="download(file)" class="cursor-download">
                                             <i class="icon icon-download"></i>
                                         </a>
                                         &nbsp;
@@ -119,7 +119,7 @@ function componentJS(){
                                     </div>
                                     <div class="column two-thirds">
                                         <input type="file" name="teachingForm" @change="validateTeachingForm" ref="teachingForm" style="width: 200px;">
-                                        <button @click.prevent="$refs.teachingForm.value = '';formUpdate.errors = Object.assign(formUpdate.errors, { teachingForm : 'Must be selected' });">
+                                        <button @click.prevent="$refs.teachingForm.value = '';">
                                             Clear
                                         </button>
                                         <label class="label-message color-red">                                    
@@ -141,6 +141,9 @@ function componentJS(){
                                         @delete = "onDeleteMaterial($event)"
                                         column-id="MaterialID" add-name="additionalMaterials[]" name="additionalMaterials" :files="teach.AdditionalMaterials">
                                         </list-files>
+                                        <label class="label-message color-red">                                    
+                                            {{ formUpdate.errors.additionalMaterials }}
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -156,6 +159,7 @@ function componentJS(){
                             </div>
                         </form>
                     </div>
+                }
             </nj-popup>
         </div>
         `,
@@ -272,6 +276,7 @@ function componentJS(){
             },
             doUpdate : function(){
                 var _self = this;
+                delete _self.formUpdate.errors.additionalMaterials;
                 if(_self.formUpdate.isSubmitting) return;
                 _self.formUpdate.isSubmitting = true;
                 const formData = new FormData(this.$refs.formUpdate);
@@ -292,8 +297,7 @@ function componentJS(){
                     BM.successMessage('Data has been updated', 'success', () => {});
                 }).catch((err) => {
                     _self.formUpdate.isSubmitting = false;
-                    BM.successMessage('Error occured when updating data', 'failed', () => {});
-                    _self.formUpdate.errors = err.response.data
+                    _self.formUpdate.errors = err.response.data;
                 });
             },
         }
@@ -316,7 +320,7 @@ function componentJS(){
                             <tr v-for="(item, index) in items" :key="item.ToeflID">
                                 <td>{{ (index + 1) }}</td>
                                 <td>
-                                    <a :title="getFileName(item.LocationFile)" @click.prevent="download(item)">
+                                    <a :title="getFileName(item.LocationFile)" @click.prevent="download(item)" class="cursor-download">
                                         <i class="icon icon-download"></i>
                                     </a>
                                 </td>
@@ -337,6 +341,7 @@ function componentJS(){
                     <form ref="formUpdate" @submit.prevent="">
                         <h3 style="text-align: center;text-transform: uppercase;">Edit TOEFL Certificarte</h3>
                         <div class="row">
+                            <div>
                                 <div class="column one-third">
                                     <label class="side" for="">Choose File <span class="color-red">*</span>
                                         <br> 
@@ -346,7 +351,7 @@ function componentJS(){
                                 <div class="column two-thirds" style="overflow: hidden;">
                                     <div class="row" style="margin: 0px -10px">
                                         <div class="column two-thirds" style="overflow: hidden;">
-                                            <input type="file" name="certificate" @change="certificateChanged" ref="certificate">
+                                            <input type="file" name="certificate" @change="formUpdate.errors.certificate = certificateChanged($event)" ref="certificate">
                                         </div>
                                         <div class="column one-third" style="overflow: hidden;">
                                             <span class="clickable color-blue" @click.prevent="$refs.certificate.value = ''">
@@ -377,10 +382,7 @@ function componentJS(){
                 formUpdate : {
                     data : {},
                     errors : {
-                        activity : null,
-                        startDate : null,
-                        endDate : null,
-                        supportingMaterials : null,
+                        certificate : null,
                     },
                     isSubmitting : false
                 }
@@ -396,7 +398,7 @@ function componentJS(){
                 return names.pop();
             },
             certificateChanged : function(e){
-                this.formUpdate.errors.certificate = this.validateCertificate(e.target.files[0]);
+                return this.validateFileCertificate(e.target.files[0], ['pdf', 'png', 'jpg', 'jpeg', 'zip']);
             },
             onDelete : function(id){
                 if(confirm('Are you sure want to delete?') === true) 
@@ -424,10 +426,21 @@ function componentJS(){
                     BM.successMessage('Data has been update', 'success', () => {});
                 }).catch((err) => {
                     BM.successMessage('Error occured when updating data', 'failed', () => {});
-                    _self.formUpdate.errors = err.response.data
+                    _self.formUpdate.errors = err.response.data;
                     _self.formUpdate.isSubmitting = false;
                 });
-            }
+            },
+            validateFileCertificate : function(file, allowedTypes=[]){
+                const ext = (file.name || '').split(".").pop();
+                if(file.size > this.MAX_SIZE_FILE){
+                    return `File exceeds maximum size ${this.MAX_SIZE_FILE / 1000000}MB`;
+                }
+                if(allowedTypes.length == 0) return null;
+                else if(!allowedTypes.includes(ext)){
+                    return `Only accept ${allowedTypes.join(', ')} files`;
+                }
+                return null;
+            },
         },
     });
     Vue.component('list-community-development', {
@@ -514,6 +527,9 @@ function componentJS(){
                                                 @delete = "onDeleteMaterial"
                                                 column-id="MaterialID" add-name="supportingMaterials[]" name="supportingMaterials" :files="comdev.SupportingMaterials">
                                                 </list-files>
+                                                <label class="label-message color-red">
+                                                    {{ formUpdate.errors.supportingMaterials || "&nbsp;" }}
+                                                </label> 
                                             </div>
                                         </div>
                                     </div>
@@ -555,7 +571,9 @@ function componentJS(){
                                 <template v-if="typeof item.SupportingMaterials == 'undefined' || item.SupportingMaterials.length < 1">Empty</template>
                                 <template v-else>
                                     <template v-for="file in item.SupportingMaterials">
-                                        <a @click.prevent="download(file)" :title="getFileName(file.LocationFile)"><i class="icon icon-download"></i></a>
+                                        <a @click.prevent="download(file)" :title="getFileName(file.LocationFile)" class="cursor-download">
+                                            <i class="icon icon-download"></i>
+                                        </a>
                                         &nbsp;
                                     </template>
                                 </template>
@@ -643,6 +661,7 @@ function componentJS(){
             },
             doUpdate : function(){
                 var _self = this;
+                delete _self.formUpdate.errors.supportingMaterials;
                 if(_self.formUpdate.isSubmitting) return;
                 _self.formUpdate.isSubmitting = true;
                 const formData = new FormData(this.$refs.formUpdate);
@@ -730,7 +749,9 @@ function componentJS(){
                                 <template v-if="typeof item.SupportingMaterials == 'undefined' || item.SupportingMaterials.length < 1">Empty</template>
                                 <template v-else>
                                     <template v-for="file in item.SupportingMaterials">
-                                        <a @click.prevent="download(file)" :title="getFileName(file.LocationFile)"><i class="icon icon-download"></i></a>
+                                        <a @click.prevent="download(file)" :title="getFileName(file.LocationFile)" class="cursor-download">
+                                            <i class="icon icon-download"></i>
+                                        </a>
                                         &nbsp;
                                     </template>
                                 </template>
@@ -817,10 +838,7 @@ function componentJS(){
                                         </label>
                                     </div>
                                     <div class="column two-thirds">
-                                        <div style="display: flex;align-items: center;">
-                                            <span style="display: block;padding: 8px;border: 1px solid #c9c9c9;border-right: none;background-color:white;">Rp </span>
-                                            <input type="text" name="budget" @input="validateBudget" v-model="research.Budget">
-                                        </div
+                                        <input type="text" name="budget" @input="validateBudget" v-model="research.Budget">
                                         <label class="label-message color-red">
                                             {{ formUpdate.errors.budget }}
                                         </label>
@@ -1014,6 +1032,9 @@ function componentJS(){
                                         @delete = "onDeleteMaterial"
                                         column-id="MaterialID" add-name="supportingMaterials[]" name="supportingMaterials" :files="research.SupportingMaterials">
                                         </list-files>
+                                        <label class="label-message color-red">
+                                            {{ formUpdate.errors.supportingMaterials }}
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -1050,7 +1071,7 @@ function componentJS(){
             formattedCurrency : function(curr){
                 const number = parseInt(curr);
                 const temp = number.toLocaleString().split(',').join('.');
-                return `Rp ${temp}`;
+                return `${temp}`;
             },
             download : function(file){
                 var _self = this;
@@ -1237,6 +1258,7 @@ function componentJS(){
             },
             doUpdate : function(){
                 var _self = this;
+                delete _self.formUpdate.errors.supportingMaterials;
                 if(_self.isAnyErrors(_self.formUpdate.errors)) return;
                 if(_self.formUpdate.isSubmitting) return;
                 _self.formUpdate.isSubmitting = true;
@@ -1257,8 +1279,7 @@ function componentJS(){
                     _self.formUpdate.isSubmitting = false;
                     BM.successMessage('Data has been updated', 'success', () => {});
                 }).catch((err) => {
-                    BM.successMessage('Error occured when updating data', 'failed', () => {});
-                    _self.formUpdate.errors = err.response.data
+                    _self.formUpdate.errors = err.response.data;
                     _self.formUpdate.isSubmitting = false;
                 });
             },
@@ -1290,9 +1311,9 @@ function componentJS(){
             <div v-for="(file, index) in files">
                 <span>{{ index + 1 }}.&nbsp;</span>
                 <input type="file" :name="getName(file[columnId])" style="width: 200px;">
-                <i @click="onDelete(file[columnId], $event)" class="cursor-pointer icon icon-trash"></i>    
-                <i @click="$event.target.parentNode.children[0].value = '';" class="cursor-pointer icon icon-reject"></i>    
-                <a @click.prevent="download(file)" :title="getFileName(file.LocationFile)">
+                <i @click="onDelete(file[columnId], $event)" class="cursor-pointer icon icon-trash"></i> &nbsp;
+                <i @click="$event.target.parentNode.children[1].value = '';console.log($event.target.parentNode.children[1]);" class="cursor-pointer icon icon-reject"></i> &nbsp;
+                <a @click.prevent="download(file)" :title="getFileName(file.LocationFile)" class="cursor-download">
                     <i class="icon icon-download"></i>
                 </tooltip>
             </div><br>
@@ -1300,7 +1321,7 @@ function componentJS(){
                 <a class="color-blue" @click="isShow = true;"> Do you want to add another files? </a><br>
                 <template v-if="isShow">
                     <input  style="width: 200px;" type="file" :name="addName" multiple> 
-                    <i @click="$event.target.parentNode.children[1].value = '';" class="cursor-pointer icon icon-reject"></i>    
+                    <i @click="$event.target.parentNode.children[2].value = '';" class="cursor-pointer icon icon-reject"></i>    
                     <br>
                     <a class="color-blue"  @click="isShow = false">I don't</a>
                 </template>
@@ -1310,7 +1331,7 @@ function componentJS(){
         methods : {
             download : function(file){
                 var _self = this;
-                _self.download(file);
+                downloadFile(file);
             },
             getFileName : function(filepath){
                 const names = filepath.split("/") || ['Empty'];

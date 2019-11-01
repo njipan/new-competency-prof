@@ -38,8 +38,11 @@ var subView = {
         axios.interceptors.response.use(
             (response) => (response),
             (error) => {
-                if(typeof error.response.data.message == 'string')
-                    BM.successMessage(error.response.data.message,'failed', () => {});
+                if(typeof error.response.data.message == 'string'){
+                    BM.successMessage(error.response.data.message,'failed', () => {
+                        delete error.response.data.message;
+                    });
+                }
                 return Promise.reject(error);
             }
         );
@@ -90,7 +93,7 @@ var subView = {
                     });
                 }).catch(() => {
                     BM.successMessage('You are not allowed to see this page', 'failed', () => {
-                        window.location.href = BM.baseUri;
+                        window.location.href = `${BM.baseUri}newstaff`;
                     });
                 });                
             },
