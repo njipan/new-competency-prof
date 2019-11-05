@@ -13,15 +13,13 @@ require_once('requests/DeleteMultipleCandidateRequest.php');
 require_once('repos/CandidateRepository.php');
 require_once('repos/StaffRepository.php');
 
+require_once('constants/CandidateStatusType.php');
 
 class Candidate extends BaseController {
 
     static protected $JKA_DB = 'JKA_DB';
     static protected $CMS_DB = 'CMS_DB';
     static protected $PERPAGE = 5;
-    static protected $STATUS_ON_PROCESS = 6;
-    static protected $NEW_CANDIDATE_STATUS = 1;
-    static protected $STATUS_WAITING_HOP = 2;
 
     public function __construct(){
         parent::__construct();
@@ -30,7 +28,7 @@ class Candidate extends BaseController {
     private function isValidRequestForInputPage($user){
         $repo = new CandidateRepository();
         $candidate = $repo->getCandidateByLecturerCode($user);
-        return !empty($candidate) && $candidate->StatusID == self::$STATUS_ON_PROCESS;
+        return !empty($candidate) && $candidate->StatusID == CandidateStatusType::$ON_PROCESS;
     }
 
     private function isValidRequestForLRC($user){
@@ -63,7 +61,7 @@ class Candidate extends BaseController {
         $candidateRepo = new CandidateRepository();
         $candidates = $candidateRepo->deletes($params);
         if(empty($candidates) || count($candidates) != count($data)){
-            $this->httpRequestInvalid('Error occured when deleting data. Please check you candidate is appropriate');
+            $this->httpRequestInvalid('Error occured when deleting data. Please check your candidate is appropriate');
             return;   
         }   
         return $this->load->view('json_view', [
@@ -89,9 +87,18 @@ class Candidate extends BaseController {
         }
         $candidate_id = $data['id'];
         $candidateRepo = new CandidateRepository();
-        $candidate = $candidateRepo->delete($candidate_id);
+        $candidate = $candidateRepo->getCandidateByID($candidate_id);
         if(empty($candidate)){
             $this->httpRequestInvalid('Data is not valid');
+            return;   
+        }
+        if($candidate->StatusID != CandidateStatusType::$OPEN){
+            $this->httpRequestInvalid('Data cannot be deleted');
+            return;   
+        }
+        $candidate = $candidateRepo->delete($candidate_id);
+        if(empty($candidate)){
+            $this->httpRequestInvalid('Failed to delete data');
             return;   
         }   
         return $this->load->view('json_view', [
@@ -444,8 +451,11 @@ class Candidate extends BaseController {
         $request = new PostCandidateRequest();
         $candidateRepo = new CandidateRepository();
         $errors = $request->getErrors();
-        if(!empty($errors['message'])){
-            return $this->httpRequestInvalid($errors['message']);
+        if(!empty($errors)){
+            http_response_code(422);
+            return $this->load->view('json_view', [
+                'json' => $errors,
+            ]);
         }
 
         $candidates = [];
@@ -454,7 +464,7 @@ class Candidate extends BaseController {
             if(!$candidate = $candidateRepo->post($id)){
                 return $this->httpRequestInvalid('Error occured when posting candidate');
             }
-            $item['StatusID'] = self::$STATUS_WAITING_HOP;
+            $item['StatusID'] = CandidateStatusType::$WAITING_HOP;
             $candidates[] = $item;
         }
 

@@ -152,23 +152,21 @@ function componentJS(){
                                     <div class="column" style="text-align: right">
                                         <nj-button @click="doUpdate" :is-processed="formUpdate.isSubmitting" display-text="Save" animation-color="white">
                                         </nj-button>
-                                        <nj-button @click="teach = null" :is-processed="false" display-text="Cancel" animation-color="white">
+                                        <nj-button @click="teach = null;$emit('cancel');" :is-processed="false" display-text="Cancel" animation-color="white">
                                         </nj-button>
                                     </div>
                                 </div>
                             </div>
                         </form>
                     </div>
-                }
             </nj-popup>
         </div>
         `,
-        props : ['items'],
+        props : ['items', 'search'],
         data : function(){
             return {
                 teach : null,
                 isShow : true,
-                search : '',
                 formUpdate : {
                     data : {},
                     errors : {
@@ -252,20 +250,12 @@ function componentJS(){
                     _self.formUpdate.errors = Object.assign(_self.formUpdate.errors, { teachingForm : message });
                 }
             },
-            onSearch : function(text){
-                text = text.toLowerCase();
-                var _self = this;
-                if(text.trim() != '') {
-                    return _self.items.filter((item) => {
-                        return item.TeachingPeriod.toLowerCase().includes(text) || item.Course.toLowerCase().includes(text);
-                    });
-                }
-                return this.items;
-            },
             onDeleteMaterial : function(material_id){
+                var _self = this;
                 if(confirm('Are you sure want to delete?')){
-                    axios.post('material/delete', { material_id }).then(res => {
+                    axios.post('material/delete', { material_id, sub_item_id : _self.search.sub_item_id, subtype_id : _self.teach.TeachingTrID }).then(res => {
                         BM.successMessage('File has been deleted', 'success', () => {});
+                        _self.teach.AdditionalMaterials = [..._self.teach.AdditionalMaterials].filter(file => file.MaterialID != material_id)
                     }).catch(err => {
     
                     });
@@ -364,7 +354,7 @@ function componentJS(){
                                     </label>
                                     <div>
                                         <nj-button @click="onUpdate" :is-processed="formUpdate.isSubmitting" display-text="SAVE" animation-color="white"></nj-button>
-                                        <nj-button @click="toefl = null;" :is-processed="false" display-text="CANCEL" animation-color="white"></nj-button>
+                                        <nj-button @click="toefl = null;$emit('cancel');" :is-processed="false" display-text="CANCEL" animation-color="white"></nj-button>
                                     </div>
                                 </div>
                             </div>
@@ -373,12 +363,11 @@ function componentJS(){
                 </template>
             </div>
         `,
-        props : ['items', 'validateCertificate'],
+        props : ['items', 'validateCertificate', 'search'],
         data : function(){
             return {
                 toefl : null,
                 isShow : true,
-                search : '',
                 formUpdate : {
                     data : {},
                     errors : {
@@ -459,20 +448,6 @@ function componentJS(){
                                 <div class="row">
                                     <div class="form-group clearfix">
                                         <div class="column one-third">
-                                            <label class="side" for="">ID <span class="color-red"></span>
-                                            <br> 
-                                            <span class="mini-message">ID</span>
-                                            </label>
-                                        </div>
-                                        <div class="column two-thirds">
-                                            <input type="text" @input="" :disabled="true" :value="comdev.ComdevTrID">
-                                            <label class="label-message color-red">&nbsp;</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="form-group clearfix">
-                                        <div class="column one-third">
                                             <label class="side" for="">Activity <span class="color-red">*</span>
                                             <br> 
                                             <span class="mini-message">Nama Aktivitas</span>
@@ -539,7 +514,7 @@ function componentJS(){
                                         <div class="column" style="text-align: right">
                                             <nj-button @click="doUpdate" :is-processed="formUpdate.isSubmitting" display-text="Save" animation-color="white">
                                             </nj-button>
-                                            <nj-button @click="comdev = null" :is-processed="false" display-text="Cancel" animation-color="white">
+                                            <nj-button @click="comdev = null;$emit('cancel');" :is-processed="false" display-text="Cancel" animation-color="white">
                                             </nj-button>
                                         </div>
                                     </div>
@@ -592,11 +567,10 @@ function componentJS(){
             </div>
         </div>
         `,
-        props : ['items'],
+        props : ['items', 'search'],
         data : function(){
             return {
                 isShow : true,
-                search : '',
                 comdev : null,
                 formUpdate : {
                     data : {},
@@ -651,9 +625,11 @@ function componentJS(){
                 _self.comdev = Object.assign({}, comdev);
             },
             onDeleteMaterial : function(material_id){
+                var _self = this;
                 if(confirm('Are you sure want to delete?')){
-                    axios.post('material/delete', { material_id }).then(res => {
+                    axios.post('material/delete', { material_id, sub_item_id : _self.search.sub_item_id, subtype_id : _self.comdev.ComdevTrID }).then(res => {
                         BM.successMessage('File has been deleted', 'success', () => {});
+                        _self.comdev.SupportingMaterials = [..._self.comdev.SupportingMaterials].filter(file => file.MaterialID != material_id)
                     }).catch(err => {
     
                     });
@@ -684,16 +660,6 @@ function componentJS(){
                     _self.formUpdate.errors = err.response.data;
                     _self.formUpdate.isSubmitting = false;
                 });
-            },
-            onSearch : function(text){
-                text = text.toLowerCase();
-                var _self = this;
-                if(text.trim() != '') {
-                    return _self.items.filter((item) => {
-                        return item.ActivityName.toLowerCase().includes(text);
-                    });
-                }
-                return this.items;
             },
         },
         created : function(){
@@ -1043,7 +1009,7 @@ function componentJS(){
                                     <div class="column" style="text-align: right">
                                         <nj-button @click="doUpdate" :is-processed="formUpdate.isSubmitting" display-text="Save" animation-color="white">
                                         </nj-button>
-                                        <nj-button @click="research = null" :is-processed="false" display-text="Cancel" animation-color="white">
+                                        <nj-button @click="research = null;$emit('cancel');" :is-processed="false" display-text="Cancel" animation-color="white">
                                         </nj-button>
                                     </div>
                                 </div>
@@ -1054,7 +1020,7 @@ function componentJS(){
             </nj-popup>
         </div>
         `,
-        props : ['items', 'membershipStatuses', 'researchLevels'],
+        props : ['items', 'membershipStatuses', 'researchLevels', 'search'],
         data : function(){
             return {
                 isShow : true,
@@ -1242,9 +1208,12 @@ function componentJS(){
                 this.formUpdate.data.researchLevel  = this.research.LevelResearchID;
             },
             onDeleteMaterial : function(material_id){
+                var _self = this;
+                console.log({..._self.search});
                 if(confirm('Are you sure want to delete?')){
-                    axios.post('material/delete', { material_id }).then(res => {
+                    axios.post('material/delete', { material_id, sub_item_id : _self.search.sub_item_id, subtype_id : _self.research.ResearchTrID }).then(res => {
                         BM.successMessage('File has been deleted', 'success', () => {});
+                        _self.research.SupportingMaterials = [..._self.research.SupportingMaterials].filter(file => file.MaterialID != material_id)
                     }).catch(err => {
     
                     });
@@ -1283,16 +1252,6 @@ function componentJS(){
                     _self.formUpdate.isSubmitting = false;
                 });
             },
-            onSearch : function(text){
-                text = text.toLowerCase();
-                var _self = this;
-                if(text.trim() != '') {
-                    return _self.items.filter((item) => {
-                        return item.Title.toLowerCase().includes(text) || item.Level.toLowerCase().includes(text) || item.StatusKep.toLowerCase().includes(text);
-                    });
-                }
-                return this.items;
-            },
             onDelete : function(id){
                 if(confirm('Are you sure want to delete?') === true) this.$emit('delete', id);
             },
@@ -1312,7 +1271,7 @@ function componentJS(){
                 <span>{{ index + 1 }}.&nbsp;</span>
                 <input type="file" :name="getName(file[columnId])" style="width: 200px;">
                 <i @click="onDelete(file[columnId], $event)" class="cursor-pointer icon icon-trash"></i> &nbsp;
-                <i @click="$event.target.parentNode.children[1].value = '';console.log($event.target.parentNode.children[1]);" class="cursor-pointer icon icon-reject"></i> &nbsp;
+                <i @click="$event.target.parentNode.children[1].value = '';" class="cursor-pointer icon icon-reject"></i> &nbsp;
                 <a @click.prevent="download(file)" :title="getFileName(file.LocationFile)" class="cursor-download">
                     <i class="icon icon-download"></i>
                 </tooltip>

@@ -133,7 +133,7 @@ class Toefl extends BaseController {
             return $this->httpRequestInvalid('Problem occured while deleting data');
         }
         return $this->load->view('json_view', [
-            'json' => 'success',
+            'json' => $toefl_deleted->result(),
         ]);
     }
     

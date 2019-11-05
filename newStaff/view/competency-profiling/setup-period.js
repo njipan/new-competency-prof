@@ -7,6 +7,7 @@ var subView = {
         sv = this;
         sv.onRequire();
         sv.prepare();
+        document.title = 'COMPETENCY PROFILING - SETUP PERIOD';
     },
     prepare: function(){
         window.document.title = this.title;

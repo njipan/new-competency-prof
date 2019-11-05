@@ -665,22 +665,29 @@
             <list-research 
                 @delete="onDeleted($event, RESEARCH, 'ResearchTrID')" 
                 @update="onSubTypeClicked(RESEARCH)" 
+                @cancel="onCancel" 
                 v-if="searchSubTypeState == RESEARCH"
                 :research-levels = "researchLevels"
                 :membership-statuses = "membershipStatuses" 
-                :items="dataSubTypes">
+                :items="dataSubTypes" 
+                :search="searchParams"
+                >
             </list-research>
             <list-teaching-learning 
                 @delete="onDeleted($event, TEACHING_LEARNING, 'TeachingTrID')" 
                 @update="onSubTypeClicked(TEACHING_LEARNING)" 
+                @cancel="onCancel" 
                 v-if="searchSubTypeState == TEACHING_LEARNING" 
-                :items="dataSubTypes">
+                :items="dataSubTypes" 
+                :search="searchParams">
             </list-teaching-learning>
             <list-community-development 
                 @delete="onDeleted($event, COMMUNITY_DEVELOPMENT, 'ComdevTrID')" 
                 @update="onSubTypeClicked(COMMUNITY_DEVELOPMENT)" 
+                @cancel="onCancel" 
                 v-if="searchSubTypeState == COMMUNITY_DEVELOPMENT" 
-                :items="dataSubTypes">
+                :items="dataSubTypes" 
+                :search="searchParams">
             </list-community-development>
         </div>
     </div>

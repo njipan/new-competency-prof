@@ -34,4 +34,15 @@ class MaterialRepository extends AbstractRepository{
         return $this->handleReturn($materials);
     }
 
+    public function getMaterialsBySubtype($subtype_id, $sub_item){
+        $params = [
+            '_SubtypeID' => $subtype_id,
+            '_N_SUBITEM_ID' => $sub_item,
+        ];
+        if(!$materials = $this->sp('bn_JKA_GetMaterialsBySubType', $params, self::$JKA_DB)){
+            return null;
+        }
+        return $materials->result();
+    }    
+
 }

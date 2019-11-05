@@ -131,7 +131,8 @@ var subView = {
             filtered : {
                 items : ['01-ACAD', '02-TECH'],
                 subitems : ['COMDEV','RSCH','TEACH','TOEFL']
-            }
+            },
+            searchParams : {}
         };
         inputCompetencyProfilingApp = new Vue({
             el: '#input-competency-profiling-app',
@@ -313,7 +314,14 @@ var subView = {
                     }
                     return true;
                 },
-                onSubTypeClicked : function(type){
+                onCancel : function(){
+                    var _self = this;
+                    _self.dataSubTypes = [];
+                    setTimeout(function(){
+                        _self.onSubTypeClicked( _self.searchParams.sub_item_id, _self.searchParams.period_id,_self.searchParams.item_id );
+                    }, 200);
+                },
+                onSubTypeClicked : function(type, periodId = null, itemId = null){
                     var _self = this;
                     _self.dataSubTypes = [];
                     _self.searchSubTypeState = type;
@@ -323,10 +331,11 @@ var subView = {
                     uris[_self.COMMUNITY_DEVELOPMENT] = 'comdev/candidate';
                     uris[_self.TOEFL] = 'toefl/candidate';
                     const data = {
-                        period_id : _self.form.period.PeriodID,
-                        item_id : _self.form.itemType.N_ITEM_ID,
+                        period_id : periodId || _self.form.period.PeriodID,
+                        item_id : itemId || _self.form.itemType.N_ITEM_ID,
                         sub_item_id : type
                     };
+                    _self.searchParams = { ...data };
                     axios.post(uris[type], data)
                     .then(function(response){
                         _self.dataSubTypes = response.data;
@@ -334,10 +343,12 @@ var subView = {
                             BM.successMessage('No data exist', 'failed', () => {});
                             return;
                         }
+                        var fixed_column = 3;
+                        if(type == _self.COMMUNITY_DEVELOPMENT) fixed_column = 2;
                         _self.$nextTick(function(){
                             $('.freeze-pane').binus_freeze_pane({
-                                fixed_left  : 1,     // default 1
-                                height      : 300    // default 300
+                                fixed_left  : fixed_column,
+                                height      : 300
                             });
                         });
                     }).catch(err => {
@@ -482,7 +493,8 @@ var subView = {
                 },
                 onDeleted : function(id, type, column){
                     var _self = this;
-                    axios.post(_self.getUriDeleteFromSubType(type),{ id })
+                    const data = { id };
+                    axios.post(_self.getUriDeleteFromSubType(type), data)
                     .then(res => {
                         const filtered = _self.dataSubTypes.filter(item => item.ToeflID != id);
                         _self.dataSubTypes = [];

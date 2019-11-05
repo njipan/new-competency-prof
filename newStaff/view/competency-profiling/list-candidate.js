@@ -7,16 +7,16 @@ var subView = {
         sv = this;
         sv.onRequire();
         $.fancybox.update();
-        let elTitle = $('#competency-profiling-title');
-        elTitle.text(elTitle.text().split("-")[0].trim() + ' - ' + sv.title.trim());
+        sv.prepare();
+        document.title = 'COMPETENCY PROFILING - LIST CANDIDATE';
     },
     onRequire : function(){
         Promise.all([
-            requireScript(BM.baseUri+`newstaff/src/components/nj-dropdown-list.js`,window['njDropdownList']),
-            requireScript(BM.baseUri+`newstaff/src/components/nj-datepicker.js`,window['njDatepicker']),
+            requireScript(BM.baseUri+`newstaff/src/components/nj-dropdown-list.js`,window['']),
+            requireScript(BM.baseUri+`newstaff/src/components/nj-datepicker.js`,window['']),
             requireScript(BM.baseUri+`newstaff/src/components/nj-button.js`,window['']),
             requireScript(BM.baseUri+`newstaff/src/components/nj-popup.js`,window['']),
-            requireScript(BM.baseUri+`newstaff/src/components/nj-freezepane.js`,window['X']),
+            requireScript(BM.baseUri+`newstaff/src/components/nj-freezepane.js`,window['']),
             requireScript(BM.baseUri+`newstaff/src/components/tooltip.js`,window['']),
         ])
         .then(function(){
@@ -97,7 +97,8 @@ var subView = {
             IS_ASKING_UPDATE : false,
             IS_ASKING_ADD : false,
             isPosting : false,
-            candidateErrors : {}
+            candidateErrors : {},
+            searchParams : {},
         };
         listCandidateApp = new Vue({
             el: '#list-candidate-app',
@@ -153,6 +154,10 @@ var subView = {
                 }
             },
             methods : {
+                disableByStatusID : function(candidateId, statusId){
+                    var _self = this;
+                    return statusId == _self.STATUS_OPEN && _self.editForm[candidateId];
+                },
                 filterJKA : function(jka){
                     console.log('sadfdsasadf');
                     var _self = this;
@@ -178,12 +183,26 @@ var subView = {
                     }
                     _self.isDeleting = true;
                     axios.post('candidate/deletes', Object.values(_self.editForm)).then(res => {
+                        var candidates = [..._self.candidates];
                         BM.successMessage('Selected data has been deleted', 'success', () => {});
-                        _self.isDeleting = false;
                         _self.editForm = {};
                         _self.ACTION = null;
+                        _self.getCandidates({ ..._self.searchParams })
+                        .then(res => {
+                            _self.candidates = [];
+                            setTimeout(function(){
+                                if(Array.isArray(res.data) && res.data.length > 0){
+                                    _self.candidates = res.data;    
+                                }
+                            }, 200);            
+                        })
+                        .catch(err => {})
+                        .finally(() => {
+                            _self.isDeleting = false;
+                        })
                     })
-                    .catch(err => {
+                    .catch(err => { _self.candidateErrors = err.response.data; })
+                    .finally(() => {
                         _self.isDeleting = false;
                     });
                 },
@@ -310,9 +329,7 @@ var subView = {
                         });
                         _self.candidates = [...candidates];
                         BM.successMessage('Status has been changed', 'success', () => {});
-                    }).catch(function(err){
-                        BM.successMessage(err.response.data.message, 'failed', () => {});
-                    });
+                    }).catch(function(err){});
                 },
                 editNextGradeJKA : function(nextGradeJKA, candidate){
                     const temp = _self.editForm[candidate.CandidateID];
@@ -333,6 +350,7 @@ var subView = {
                         department : _self.form.department.Dep || '*',
                         period_id : _self.form.period.PeriodID || null
                     };
+                    _self.searchParams = {...params};
                     _self.printData = Object.assign({}, params);
                     _self.printData.institution_name = _self.form.institution.InstName;
                     _self.printData.organization_name = _self.form.organization.DESCR || '*';
@@ -375,7 +393,6 @@ var subView = {
                     var _self = this;                    
                     const selected = _self.candidates.reduce((res, data) => {
                         const temp = res;
-                        if(!_self.isCanEditStatus(data)) return temp;
                         temp[data.CandidateID] = _self.selectedToEditFactory(data);
                         return temp;
                     }, {});
@@ -395,20 +412,11 @@ var subView = {
                     var _self = this;
                     if (e.target.checked) {
                         _self.editForm[id] = _self.selectedToEditFactory(candidate);
+                        if(Object.keys(_self.editForm).length == [..._self.candidates].length) _self.$refs.checkboxAllCandidate.checked = true;
                     }
                     else{
                         delete _self.editForm[id];
-                    }
-                    _self.editForm = Object.assign({}, _self.editForm);
-                },
-                onSelected : function(e,candidate){
-                    const id = candidate.CandidateID;
-                    var _self = this;
-                    if (e.target.checked) {
-                        _self.editForm[id] = true;
-                    }
-                    else{
-                        delete _self.editForm[id];
+                        _self.$refs.checkboxAllCandidate.checked = false;
                     }
                     _self.editForm = Object.assign({}, _self.editForm);
                 },
@@ -472,12 +480,14 @@ var subView = {
                     if (e.target.checked) {
                         _self.candidatesToAdd.push(_self.addCandidateFactory(candidate));
                         _self.checkedCandidates[candidate.LecturerCode] = true;
+                        if(_self.candidatesToAdd.length == _self.candidates.length) _self.$refs.checkboxAddCandidate.checked = true;
                     }
                     else{
                         _self.candidatesToAdd = _self.candidatesToAdd.filter(item => (
                             item.LecturerCode != candidate.LecturerCode
                         ));
                         delete _self.checkedCandidates[candidate.LecturerCode];
+                        _self.$refs.checkboxAddCandidate.checked = false;
                     }
                 },
                 onSave : function(){
@@ -519,6 +529,7 @@ var subView = {
                             _self.isSaving = false;
                             _self.editForm = {};
                             _self.ACTION = null;
+                            BM.successMessage('Data has been saved', 'success', () => {});
                         })
                         .catch(err => {
                             _self.isSaving = false;
@@ -540,10 +551,6 @@ var subView = {
                 onPost : function(){
                     var _self = this;
                     if(confirm('Are you sure want to post?') == false) return;
-                    if(Object.keys(_self.editForm).length < 1){
-                        alert('No data selected');
-                        return;
-                    }
                     if(_self.isPosting) return;
                     _self.isPosting = true;
                     axios.post('candidate/post', Object.values(_self.editForm)).then(res => {
@@ -554,6 +561,7 @@ var subView = {
                         BM.successMessage('Data has been posted', 'success', () => {});
                     }).catch(err => {
                         _self.isPosting = false;
+                        _self.candidateErrors = err.response.data;
                     });
                 },
                 onAddClicked : function(){

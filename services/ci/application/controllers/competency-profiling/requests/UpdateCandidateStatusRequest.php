@@ -17,13 +17,13 @@ class UpdateCandidateStatusRequest extends AbstractRequest {
 
         $rules = [
             [],
-            [6], 
-            [3,4],
-            [5,6],
-            [6],
-            [],
-            [7],
-            [6, 8],
+            [1,6], 
+            [2,3,4],
+            [3,5,6],
+            [4,6],
+            [5],
+            [6,7],
+            [7,6,8],
             []
         ];
         $rule_validate = !empty($rules[$candidate->StatusID]) && in_array($status_id_to_be_changed, $rules[$candidate->StatusID]);

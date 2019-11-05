@@ -48,7 +48,7 @@ class Material extends BaseController {
 
     public function delete_post(){
         $request = new DeleteMaterialRequest();
-        $errors = $request->validate();
+        $errors = $request->getErrors();
         if(!empty($errors)){
             http_response_code(422);
             return $this->load->view('json_view', [

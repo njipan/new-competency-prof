@@ -13,7 +13,7 @@ class UpdateJKACandidateRequest extends AbstractRequest {
                 $candidate_id = $candidate_item['CandidateTrID'];
 	    		$candidate = $candidateRepository->getCandidateByID($candidate_id);
 	    		if(empty($candidate)) $errors['candidates'][$candidate_id] = true;
-	    		if(strcasecmp($candidate_item['NextGradeJKA'], $candidate->NextGradeJKA) != 1) $errors['candidates'][$candidate_id] = true;
+	    		if(strcasecmp($candidate_item['NextGradeJKA'], $candidate->NextGradeJKA) == -1) $errors['candidates'][$candidate_id] = true;
 	    	}
     	}catch(\Exception $e){
     		$errors['message'] = 'Error occured when updating data';
