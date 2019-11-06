@@ -157,8 +157,9 @@ class Research extends BaseController {
         if(empty($_POST['budget'])){
             $errors['budget'] = "Can't be empty";
         }
+        $_POST['budget'] = implode("", explode(".", $_POST['budget']));
         if(!is_numeric($_POST['budget'])){
-            $errors['budget'] = "Can't be empty";
+            $errors['budget'] = "Must be numeric";
         }
         if(empty($_POST['status'])){
             $errors['status'] = "Can't be empty";

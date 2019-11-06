@@ -80,6 +80,7 @@ class Subtypes extends BaseController {
 
         $payload = [];
         foreach ($body as $id => $research) {
+            $research['budget'] = implode("", explode(".", $research['budget']));
             $param_insert_research = [
                 '_UserIn' => $this->user_id,
                 '_N_ITEM_ID' => $info["N_ITEM_ID"],
@@ -153,6 +154,7 @@ class Subtypes extends BaseController {
                 "jpeg",
                 "jpg",
                 "png",
+                "zip",
             ],
         ];
 
@@ -167,6 +169,8 @@ class Subtypes extends BaseController {
             $messages["title"] = "Must be filled";
         if(empty($research['budgetSource']))
             $messages["budgetSource"] = "Must be filled";
+        
+        $research['budget'] = implode("", explode(".", $research['budget']));
         if(empty($research['budget']))
             $messages["budget"] = "Must be filled";
         else if(!is_numeric($research['budget']))

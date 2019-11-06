@@ -353,7 +353,7 @@
                 </div>    
             </div>
         </form>
-        <form v-if="formTypeState == RESEARCH" @submit.prevent="" :ref="RESEARCH">
+        <form v-if="formTypeState == RESEARCH" @submit.prevent="" :ref="RESEARCH" @change="refreshMask">
             <h3 style="text-align: center;text-transform: uppercase;">Research</h3>
             <div v-for="(item, index) in forms" track-by="id" class="form-dynamic search-filter-form">
                 <div class="row">
@@ -428,7 +428,7 @@
                             </div>
                             <div class="column two-thirds">
                                 <input type="text" v-model="item.budget" :name="`${item.id}[budget]`" data-field="budget"
-                                 @input="item.errors.budget = validateRequireText(item.budget);">
+                                 @input="item.errors.budget = validateRequireText(item.budget);" class="text-currency">
                                 <label class="label-message color-red">
                                     {{ item.errors.budget }}
                                 </label>
@@ -447,7 +447,7 @@
                             <div class="column two-thirds">
                                 <span class="custom-combobox">
                                     <select v-model="item.status" data-field="status" :name="`${item.id}[status]`"
-                                    @change="item.errors.status = validateRequireText($event.target.value);">
+                                    @change.prevent="item.errors.status = validateRequireText($event.target.value);">
                                         <option :value="''">Please select status</option>
                                         <option v-for="status in membershipStatuses" :value="status.StatusKepID" >{{ status.StatusKep }}</option>
                                     </select>

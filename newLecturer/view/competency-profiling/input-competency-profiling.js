@@ -21,6 +21,7 @@ var subView = {
             requireScript(BM.baseUri+`newstaff/src/components/tooltip.js`,window['']),
             requireScript(BM.baseUri+`newlecturer/view/competency-profiling/components.js`,window['']),
             requireScript(BM.baseUri+`newlecturer/view/competency-profiling/components.js`,window['']),
+            requireScript(BM.baseUri+`newlecturer/view/competency-profiling/src/jquery.mask.min.js`,window['']),
         ])
         .then(function(){
             sv.vue();
@@ -32,29 +33,13 @@ var subView = {
         axios.interceptors.response.use(
             (response) => (response),
             (error) => {
-                if(typeof error.response.data.message == 'string')
+                if(typeof error.response.data.message == 'string'){
                     BM.successMessage(error.response.data.message,'failed', () => {});
+                    delete error.response.data.message;
+                }
                 return Promise.reject(error);
             }
         );
-        Vue.component('testUpload', {
-            template : 
-            `
-                <form @submit.prevent="upload" ref="formUpload">
-                    <input type="file" name="file"/><button>Upload</button>
-                </form>
-            `,
-            methods : {
-                upload : function(){
-                    const _self = this;
-                    const headers = {
-                        'Content-Type': 'multipart/form-data',
-                    }
-                    const data = new FormData(_self.$refs.formUpload);
-                    axios.post('test/upload', data, { headers });
-                }
-            }
-        });
         const initData = {
             ACTION_TYPE : null,
             TYPE_CREATE : 'create',
@@ -295,6 +280,9 @@ var subView = {
                 },
                 addForm : function(){
                     var _self = this;
+                    _self.$nextTick(function(){
+                        $('.text-currency').mask('000.000.000.000.000.000', { reverse : true });
+                    });
                     let newObject = { id : Date.now() , errors : _self.objectFactory(_self.formTypeState)};
                     _self.forms.push(Object.assign(newObject, _self.objectFactory(_self.formTypeState)));
                 },
@@ -302,6 +290,10 @@ var subView = {
                     this.forms = this.forms.filter(function(current){
                         return item.id != current.id; 
                     });
+                },
+                refreshMask : function(){
+                    $('.text-currency').mask('000-000-000-000-000-000-000', { reverse : true });
+                    $('.text-currency').mask('000.000.000.000.000.000.000', { reverse : true });
                 },
                 isNoError : function(){
                     for(const item of this.forms){

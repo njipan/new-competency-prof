@@ -147,37 +147,6 @@ class General extends BaseController {
         ]);
     }
 
-    // public function periods_put(){
-    //     $request = new UpdatePeriodRequest();
-    //     $errors = $request->getErrors();
-    //     if(!empty($errors)){
-    //         http_response_code(422);
-    //         return $this->load->view('json_view', [
-    //             'json' => $errors,
-    //         ]);
-    //     }
-    //     $param = $request->transform();        
-    //     $period_id = $param["_PeriodID"];
-    //     if(empty($period_id)){
-    //         return $this->httpRequestInvalid("Period not found");
-    //     }
-    //     $period = reset($this->sp('bn_JKA_GetPeriodById', [
-    //         '_PeriodID' => $period_id,
-    //     ], self::$JKA_DB)->result());
-
-    //     if(empty($period)){
-    //         return $this->httpRequestInvalid("Period not found!!");
-    //     }        
-    //     $update = $this->sp('bn_JKA_UpdatePeriodById', $param ,self::$JKA_DB);
-    //     if(empty($update)){
-    //         return $this->httpRequestInvalid('Error occured when updating data');
-    //     }
-
-    //     return $this->load->view("json_view",[
-    //         'json' => $update->result(),
-    //     ]);
-    // }
-
     protected function validatePeriod($body){
         $errors = [];
         if(empty($body['institution'])){

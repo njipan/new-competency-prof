@@ -68,7 +68,7 @@ function componentJS(){
                     </tbody>
                 </table>
             </div>
-            <nj-popup v-if="teach != null" @close="teach = null;">
+            <nj-popup v-if="teach != null" @close="teach = null;$emit('cancel');">
                 <div class="p-wrapper shadow-md" style="background-color: white;width: 600px;">
                     <div class="p-wrapper" style="background-color: white;overflow-y: auto;max-height: 400px;">
                         <form @submit.prevent="" ref="formUpdate">
@@ -435,7 +435,7 @@ function componentJS(){
     Vue.component('list-community-development', {
         template: `
         <div>
-            <nj-popup v-if="comdev != null && isShow" @close="comdev = null;">
+            <nj-popup v-if="comdev != null && isShow" @close="comdev = null;$emit('cancel');">
                 <div class="p-wrapper shadow-md" style="background-color: white;width: 600px;">
                     <div class="p-wrapper" style="background-color: white;overflow-y: scroll;max-height: 400px;">
                         <div class="row" style="margin: 0 !important;">
@@ -734,10 +734,10 @@ function componentJS(){
                     </tbody>
                 </table>
             </div>
-            <nj-popup v-if="research != null" @close="research = null;">
+            <nj-popup v-if="research != null" @close="research = null;$emit('cancel');">
                 <div class="p-wrapper shadow-md" style="background-color: white;width: 600px;">
                     <div class="p-wrapper" style="background-color: white;overflow-y: scroll;max-height: 400px;">
-                        <form ref="formUpdate" @submit.prevent="">
+                        <form ref="formUpdate" @submit.prevent="" @change="refreshMask">
                             <div class="row">
                                 <div class="column">
                                     <h3 style="text-align: center;" class="title-popup">Update Research</h3>
@@ -804,7 +804,7 @@ function componentJS(){
                                         </label>
                                     </div>
                                     <div class="column two-thirds">
-                                        <input type="text" name="budget" @input="validateBudget" v-model="research.Budget">
+                                        <input type="text" class="text-currency" name="budget" @input="validateBudget" v-model="research.Budget">
                                         <label class="label-message color-red">
                                             {{ formUpdate.errors.budget }}
                                         </label>
@@ -1089,8 +1089,6 @@ function componentJS(){
                 _self.formUpdate.errors = Object.assign(_self.formUpdate.errors, { budget : message });
                 if(_self.isEmpty(value))
                     message = 'Must be filled';
-                else if(isNaN(value))
-                    message = 'Must be numeric';
 
                 if(message != null) _self.formUpdate.errors = Object.assign(_self.formUpdate.errors, { budget : message });
             },
@@ -1178,6 +1176,10 @@ function componentJS(){
 
                 if(message != null) _self.formUpdate.errors = Object.assign(_self.formUpdate.errors, { publicationTitle : message });
             },
+            refreshMask : function(){
+                $('.text-currency').mask('000-000-000-000-000-000-000', { reverse : true });
+                $('.text-currency').mask('000.000.000.000.000.000.000', { reverse : true });
+            },
             validatePublicationYear : function(){
                 var _self = this;
                 let message = null;
@@ -1203,9 +1205,14 @@ function componentJS(){
                 return null;
             },
             onUpdate : function(item){
-                this.research = Object.assign({}, item);
-                this.formUpdate.data.status = this.research.StatusKepID;
-                this.formUpdate.data.researchLevel  = this.research.LevelResearchID;
+                var _self = this;
+                _self.$nextTick(function(){
+                    _self.refreshMask();
+                });
+
+                _self.research = Object.assign({}, item);
+                _self.formUpdate.data.status = _self.research.StatusKepID;
+                _self.formUpdate.data.researchLevel  = _self.research.LevelResearchID;
             },
             onDeleteMaterial : function(material_id){
                 var _self = this;
@@ -1281,7 +1288,7 @@ function componentJS(){
                 <template v-if="isShow">
                     <input  style="width: 200px;" type="file" :name="addName" multiple> 
                     <i @click="$event.target.parentNode.children[2].value = '';" class="cursor-pointer icon icon-reject"></i>    
-                    <br>
+                    <br><br>
                     <a class="color-blue"  @click="isShow = false">I don't</a>
                 </template>
             </div>
