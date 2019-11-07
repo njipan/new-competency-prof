@@ -147,7 +147,7 @@ class Teach extends BaseController {
         if(!empty($files)){
             $allowed_types = $this->allowed_types['additionalMaterials'];
             foreach($files as $additionalMaterials){
-                if(empty($additionalMaterials[0]['size'])) break;
+                if(empty($additionalMaterials[0]['tmp_name'])) break;
                 foreach ($additionalMaterials as $file) {
                     if(!$this->checkMimeType($file, $allowed_types)){
                         $errors['additionalMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';

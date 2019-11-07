@@ -203,21 +203,26 @@ class Research extends BaseController {
         $allowed_types = $this->allowed_types['supportingMaterials'];
         foreach($files as $key => $supporting_material_files){
             foreach ($supporting_material_files as $file) {
-                if($file['size'] > 0){
-                    if(!$this->checkMimeType($file, $allowed_types)){
-                        $errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
-                        break;
-                    } 
+                if(empty($file['tmp_name'])) break;
+                if(!$this->checkMimeType($file, $allowed_types)){
+                    $errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
+                    break;
+                } 
+                if($file['size'] <= 0){
+                    $errors['supportingMaterials'] = 'File can\'t be empty';
+                    break;
                 }
             }
         }
         $supporting_material_files = $request->getFile('supportingMaterials');
         foreach($supporting_material_files as $file){
-            if($file['size'] > 0){
-                if(!$this->checkMimeType($file, $allowed_types)){
-                    $errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
-                    break;
-                } 
+            if(!$this->checkMimeType($file, $allowed_types)){
+                $errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
+                break;
+            } 
+            if($file['size'] <= 0){
+                $errors['supportingMaterials'] = 'File can\'t be empty';
+                break;
             }
         }
 

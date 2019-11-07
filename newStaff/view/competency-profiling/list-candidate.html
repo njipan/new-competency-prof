@@ -182,6 +182,7 @@
                 </template>
             </h2>
             <div @submit.prevent="" v-if="ACTION == ACTION_ADD">
+                {{ candidatesToAdd }}
                 <template v-if="candidates.length < 1">Data is empty ...</template>
                 <div class="freeze-pane" data-fixed-left="1" data-fixed-right="0" data-height="300" v-else>
                     <table class="bordered">

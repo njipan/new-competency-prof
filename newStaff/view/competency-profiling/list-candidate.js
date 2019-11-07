@@ -478,7 +478,7 @@ var subView = {
                 onSelectedCandidateToAdd : function(e, candidate){
                     var _self = this;
                     if (e.target.checked) {
-                        _self.candidatesToAdd.push(_self.addCandidateFactory(candidate));
+                        _self.candidatesToAdd.push(candidate);
                         _self.checkedCandidates[candidate.LecturerCode] = true;
                         if(_self.candidatesToAdd.length == _self.candidates.length) _self.$refs.checkboxAddCandidate.checked = true;
                     }

@@ -23,6 +23,9 @@ class Comdev extends BaseController {
 
         $this->lecturer_code = $this->getLecturerCode();
         $this->allowed_types['supportingMaterials'] = ['docx', 'pdf', 'zip'];
+		ini_set('display_errors', 1);
+		ini_set('display_startup_errors', 1);
+		error_reporting(E_ALL);
     }
     public function update(){
         return $this->restURIs(__FUNCTION__);
@@ -117,23 +120,28 @@ class Comdev extends BaseController {
         unset($files['supportingMaterials']);
         $allowed_types = $this->allowed_types['supportingMaterials'];
         foreach($files as $key => $supporting_material_files){
-            foreach ($supporting_material_files as $file) {
-                if($file['size'] > 0){
-                    if(!$this->checkMimeType($file, $allowed_types)){
-                        $errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
-                        break;
-                    } 
-                }
+            foreach ($supporting_material_files as $file) {  
+				if(empty($file['tmp_name'])) break;
+				if(!$this->checkMimeType($file, $allowed_types)){
+					$errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
+					break;
+				} 
+				if($file['size'] <= 0){
+					$errors['supportingMaterials'] = 'File can\'t be empty';
+					break;
+				}
             }
         }
         $supporting_material_files = $request->getFile('supportingMaterials');
-        foreach($supporting_material_files as $file){
-            if($file['size'] > 0){
-                if(!$this->checkMimeType($file, $allowed_types)){
-                    $errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
-                    break;
-                } 
-            }
+        foreach($supporting_material_files as $file){            
+			if(!$this->checkMimeType($file, $allowed_types)){
+				$errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
+				break;
+			} 
+			if($file['size'] <= 0){
+				$errors['supportingMaterials'] = 'File can\'t be empty';
+				break;
+			}
         }
 
         return $errors;

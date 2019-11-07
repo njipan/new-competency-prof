@@ -17,8 +17,8 @@ class CreateCandidateRequest  extends AbstractRequest {
         foreach ($level_rows as $item) {
         	$levels[$item->N_JKA_ID] = $item;
         }
+        
 		$reasons = $reasonRepo->all() ?: [];
-
     	if(empty($data['form']['period_id']) || empty($data['form']['institution']) || empty($data['form']['organization']) || empty($data['form']['department'])){
     		return ['message' => 'Data is invalid'];
     	}
@@ -26,15 +26,19 @@ class CreateCandidateRequest  extends AbstractRequest {
             $lecturer_code = $candidate['LecturerCode'];
     		if(empty($levels[$candidate['CurrentGradeJKA']]) || $levels[$candidate['CurrentGradeJKA']]->Descr != $candidate['CurrentJKA']){
                 $errors['candidates'][$lecturer_code] = CandidateError::$CURRENT_JKA;
+                continue;
             }
     		if(empty($levels[$candidate['NextGradeJKA']]) || $levels[$candidate['NextGradeJKA']]->Descr != $candidate['NextJKA']){
     			$errors['candidates'][$lecturer_code] = CandidateError::$NEXT_JKA;
+                continue;
             }
     		if(empty($reasons[$candidate['ReasonID']])){
     			$errors['candidates'][$lecturer_code] = CandidateError::$REASON;
+                continue;
             }
-            if(strcasecmp($candidate['NextGradeJKA'], $candidate['CurrentGradeJKA']) != 1){
+            if(strcasecmp($candidate['NextGradeJKA'], $candidate['CurrentGradeJKA']) <= 0){
                 $errors['candidates'][$lecturer_code] = CandidateError::$NEXT_JKA;
+                continue;
             }
     	}
         if(!empty($errors)) $errors['message'] = 'Error occured when saving data';

@@ -602,7 +602,12 @@ function componentJS(){
                 var _self = this;
                 let message = null;
                 if(_self.isEmpty(_self.comdev.FormattedStartDt)) message = 'Must be selected';
-
+                if(!_self.isEmpty(_self.comdev.FormattedEndDt)){
+                    const parseStartDate = moment(_self.comdev.FormattedStartDt,'DD-MM-YYYY');
+                    const parseEndDate = moment(_self.comdev.FormattedEndDt,'DD-MM-YYYY');
+                    const result = parseEndDate - parseStartDate;
+                    if(parseInt(result) < 0) message = 'Must be at least same or before end date';
+                }
                 _self.formUpdate.errors = Object.assign(_self.formUpdate.errors, {startDate : message});
             },
             validateEndDate : function(){
@@ -613,7 +618,7 @@ function componentJS(){
                     const parseStartDate = moment(_self.comdev.FormattedStartDt,'DD-MM-YYYY');
                     const parseEndDate = moment(_self.comdev.FormattedEndDt,'DD-MM-YYYY');
                     const result = parseEndDate - parseStartDate;
-                    if(parseInt(result) < 0) message = 'Must be after start date';
+                    if(parseInt(result) < 0) message = 'Must be at least same or after date';
                 }
                 _self.formUpdate.errors = Object.assign(_self.formUpdate.errors, {endDate : message});
             },

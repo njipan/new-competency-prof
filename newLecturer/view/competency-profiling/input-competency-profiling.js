@@ -10,6 +10,8 @@ var subView = {
         let elTitle = $('#competency-profiling-title');
         elTitle.text(elTitle.text().split("-")[0].trim() + ' - ' + sv.title.trim());
         $('#competency-profiling-loader').hide();
+		document.title = 'COMPETENCY PROFILING - INPUT COMPETENCY';
+		sv.prepare();
     },
     onRequire : function(){
         Promise.all([
@@ -26,6 +28,18 @@ var subView = {
         .then(function(){
             sv.vue();
         });
+    },
+	prepare: function(){
+        window.document.title = this.title;
+        $(".page-heading h1").text(this.title);
+        const $breadCrumbs = $("#BC_Caption");
+        while ($breadCrumbs.children().length > 1)
+          $breadCrumbs
+            .children()
+            .last()
+            .remove();
+        $breadCrumbs.append('<li><a href="#">Competency Profiling</a></li>');
+        $breadCrumbs.append("<li>" + this.title + "</li>");
     },
     vue : function(){
         axios.defaults.baseURL = BM.serviceUri + 'competency-profiling';
