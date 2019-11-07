@@ -46,6 +46,23 @@
     .cursor-download{
         cursor: pointer;
     }
+    .file-item{
+        display: flex;
+        flex-direction: row-reverse;
+        padding: 8px;
+        border: 1px solid #cfcfcf;
+        margin-top: 8px;
+    }
+    .file-item:first-child{
+        margin-top: 0;
+    }
+    .list-files{
+        padding: 8px;
+        border: 1px solid #cfcfcf;
+    }
+    .list-toefl-wrapper th, .list-toefl-wrapper td {
+        text-align: center;
+    }
 </style>
 <div id="input-competency-profiling-app">
     <div class="p-wrapper search-filter-form">
@@ -194,7 +211,7 @@
                                 </label>
                             </div>
                             <div class="column two-thirds">
-                                <input type="text" v-model="item.teachingPeriod" :name="`${item.id}[teachingPeriod]`" data-field="teachingPeriod"@input="item.errors.teachingPeriod = validateRequireText(item.teachingPeriod);">
+                                <input type="text" v-model="item.teachingPeriod" :name="`${item.id}[teachingPeriod]`" data-field="teachingPeriod" @input="item.errors.teachingPeriod = validateRequireText(item.teachingPeriod);">
                                 <label class="label-message color-red">
                                     {{ item.errors.teachingPeriod }}
                                 </label>
@@ -374,7 +391,7 @@
                             </div>
                             <div class="column two-thirds">
                                 <input type="text" v-model="item.year" :name="`${item.id}[year]`" data-field="year" 
-                                @input="item.errors.year = validateRequireText(item.year);">
+                                @input="item.errors.year = validateRequireText(item.year);" class="text-year">
                                 <label class="label-message color-red">
                                     {{ item.errors.year }}
                                 </label>
@@ -536,7 +553,7 @@
                             </div>
                             <div class="column two-thirds">
                                 <input type="text" v-model="item.publisherNumber" :name="`${item.id}[publisherNumber]`" data-field="publisherNumber"
-                                @input="item.errors.publisherNumber = validateRequireText(item.publisherNumber);">
+                                @input="item.errors.publisherNumber = validateRequireText(item.publisherNumber);" class="text-number">
                                 <label class="label-message color-red">
                                     {{ item.errors.publisherNumber }}
                                 </label>
@@ -554,7 +571,7 @@
                             </div>
                             <div class="column two-thirds">
                                 <input type="text" v-model="item.publisherYear" :name="`${item.id}[publisherYear]`" data-field="publisherYear"
-                                @input="item.errors.publisherYear = validateRequireText(item.publisherYear);">
+                                @input="item.errors.publisherYear = validateRequireText(item.publisherYear);" class="text-year">
                                 <label class="label-message color-red">
                                     {{ item.errors.publisherYear }}
                                 </label>
@@ -608,7 +625,7 @@
                             </div>
                             <div class="column two-thirds">
                                 <input type="text" v-model="item.publicationYear" :name="`${item.id}[publicationYear]`" data-field="publicationYear" 
-                                @input="item.errors.publicationYear = validateRequireText(item.publicationYear);">
+                                @input="item.errors.publicationYear = validateRequireText(item.publicationYear);" class="text-year">
                                 <label class="label-message color-red">
                                     {{ item.errors.publicationYear }}
                                 </label>

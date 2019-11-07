@@ -294,9 +294,7 @@ var subView = {
                 },
                 addForm : function(){
                     var _self = this;
-                    _self.$nextTick(function(){
-                        $('.text-currency').mask('000.000.000.000.000.000', { reverse : true });
-                    });
+                    _self.$nextTick(_self.refreshMask);
                     let newObject = { id : Date.now() , errors : _self.objectFactory(_self.formTypeState)};
                     _self.forms.push(Object.assign(newObject, _self.objectFactory(_self.formTypeState)));
                 },
@@ -308,6 +306,8 @@ var subView = {
                 refreshMask : function(){
                     $('.text-currency').mask('000-000-000-000-000-000-000', { reverse : true });
                     $('.text-currency').mask('000.000.000.000.000.000.000', { reverse : true });
+                    $('.text-year').mask('0000');
+                    $('.text-number').mask('00000000');
                 },
                 isNoError : function(){
                     for(const item of this.forms){

@@ -118,6 +118,7 @@ class Comdev extends BaseController {
 
         $files = $request->getFile();
         unset($files['supportingMaterials']);
+
         $allowed_types = $this->allowed_types['supportingMaterials'];
         foreach($files as $key => $supporting_material_files){
             foreach ($supporting_material_files as $file) {  
@@ -133,6 +134,14 @@ class Comdev extends BaseController {
             }
         }
         $supporting_material_files = $request->getFile('supportingMaterials');
+        
+        $materialRepository = new MaterialRepository();
+        $materials = $materialRepository->getMaterialsBySubtype($id, Subtype::$COMDEV);
+        if(count($materials) + count($supporting_material_files) > 6){
+            $errors['supportingMaterials'] = 'File upload limit reached. Max upload is 6 files.';
+            return $errors;
+        }
+        
         foreach($supporting_material_files as $file){            
 			if(!$this->checkMimeType($file, $allowed_types)){
 				$errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';

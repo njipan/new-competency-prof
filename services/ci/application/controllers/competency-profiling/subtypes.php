@@ -162,8 +162,6 @@ class Subtypes extends BaseController {
             $messages["year"] = "Must be filled";
         else if(!is_numeric($research['year']))
             $messages["year"] = "Must be numeric";
-        else if($research['year'] < $maxs['year']['min'])
-            $messages["year"] = "Minimum ".$maxs['year']['min'];
 
         if(empty($research['title']))
             $messages["title"] = "Must be filled";
@@ -179,18 +177,21 @@ class Subtypes extends BaseController {
             $messages["status"] = "Must be selected";
         if(empty($research['researchLevel']))
             $messages["researchLevel"] = "Must be selected";
+        else if(!is_numeric($research['researchLevel'])){
+            $messages['researchLevel'] = "Must be numeric";
+        }
         if(empty($research['publisher']))
             $messages["publisher"] = "Must be filled";
         if(empty($research['publisherVolume']))
             $messages["publisherVolume"] = "Must be filled";
         if(empty($research['publisherNumber']))
             $messages["publisherNumber"] = "Must be filled";
+        else if(!is_numeric($research['publisherNumber']))
+            $messages["publisherNumber"] = "Must be numeric";
         if(empty($research['publisherYear']))
             $messages["publisherYear"] = "Must be filled";
         else if(!is_numeric($research['publisherYear']))
             $messages["publisherYear"] = "Must be numeric";
-        else if($research['publisherYear'] < $maxs['year']['min'])
-            $messages["publisherYear"] = "Minimum ".$maxs['year']['min'];
         if(empty($research['publisherISSNISBN']))
             $messages["publisherISSNISBN"] = "Must be filled";
         if(empty($research['publicationTitle']))
@@ -200,6 +201,10 @@ class Subtypes extends BaseController {
         else if(!is_numeric($research['publicationYear']))
             $messages["publicationYear"] = "Must be numeric";
         
+        if(count($files['supportingMaterials']) > 6){
+            $messages['supportingMaterials'] = 'File upload limit reached. Max upload is 6 files.';
+        }
+
         foreach ($files['supportingMaterials'] as $file) {
             $message = $this->validateFile(
                 $file, 
@@ -499,15 +504,19 @@ class Subtypes extends BaseController {
 
         if(empty($comdev['endDate']) || trim($comdev['endDate']) == '') 
             $messages["endDate"] = "Must be filled";
-        
-        foreach ($files['supportingMaterials'] as $file) {
-            $message = $this->validateFile(
-                $file, 
-                $rule_types["supportingMaterials"]
-            );
-            if(!empty($message)){
-                $messages['supportingMaterials'] = $message;
-                break;    
+        if(count($files['supportingMaterials']) > 6){
+            $messages['supportingMaterials'] = 'File upload limit reached. Max upload is 6 files.';
+        }
+        else{
+            foreach ($files['supportingMaterials'] as $file) {
+                $message = $this->validateFile(
+                    $file, 
+                    $rule_types["supportingMaterials"]
+                );
+                if(!empty($message)){
+                    $messages['supportingMaterials'] = $message;
+                    break;    
+                }
             }
         }
 
@@ -551,17 +560,21 @@ class Subtypes extends BaseController {
         );
         if(!empty($message)) $messages["teachingForm"] = $message;
 
-        foreach ($files['additionalMaterials'] as $file) {
-            $message = $this->validateFile(
-                $file, 
-                $rule_types["additionalMaterials"]
-            );
-            if(!empty($message)){
-                $messages['additionalMaterials'] = $message;
-                break;    
+        if(count($files['additionalMaterials']) > 6){
+            $messages['additionalMaterials'] = 'File upload limit reached. Max upload is 6 files.';
+        }
+        else{
+            foreach($files['additionalMaterials'] as $file) {
+                $message = $this->validateFile(
+                    $file, 
+                    $rule_types["additionalMaterials"]
+                );
+                if(!empty($message)){
+                    $messages['additionalMaterials'] = $message;
+                    break;    
+                }
             }
         }
-
         return $messages;
     }
 

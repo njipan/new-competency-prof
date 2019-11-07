@@ -2,6 +2,7 @@
 require_once('BaseController.php');
 require_once('repos/CandidateRepository.php');
 require_once('repos/TeachingRepository.php');
+require_once('repos/MaterialRepository.php');
 
 require_once('requests/UpdateTeachRequest.php');
 require_once('requests/GeneralRequest.php');
@@ -118,6 +119,7 @@ class Teach extends BaseController {
 
     public function validate_update_post($request){
         $data = $request->data();
+        $id = $data['id'];
         $file_teaching_form = $request->getFile('teachingForm')[0];
         $errors = [];
         if(empty($data['teachingPeriod'])){
@@ -134,9 +136,17 @@ class Teach extends BaseController {
                 $errors['teachingForm'] = 'Only accept '.implode(", ", $allowed_types).' files';
             }
         }
-        if(!empty($files['additionalMaterials'])){
+        
+        $additional_material_files = empty($files['additionalMaterials']) ? [] : $files['additionalMaterials'];
+        $materialRepository = new MaterialRepository();
+        $materials = $materialRepository->getMaterialsBySubtype($id, Subtype::$TEACH);
+        if(count($materials) + count($additional_material_files) > 6){
+            $errors['additionalMaterials'] = 'File upload limit reached. Max upload is 6 files.';
+            return $errors;
+        }
+
+        if(!empty($additional_material_files)){
             $allowed_types = $this->allowed_types['additionalMaterials'];
-            $additional_material_files = $files['additionalMaterials'];
             foreach ($additional_material_files as $file) {
                 if(!$this->checkMimeType($file, $allowed_types)){
                     $errors['additionalMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';

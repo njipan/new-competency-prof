@@ -80,7 +80,7 @@ function componentJS(){
                             <div class="row">
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
-                                        <label class="side" for="">Teaching Period <span class="color-red">*</span>
+                                        <label class="side" for="">Teaching Period 
                                             <br> 
                                             <span class="mini-message">Periode Mengajar</span>
                                         </label>
@@ -96,7 +96,7 @@ function componentJS(){
                             <div class="row">
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
-                                        <label class="side" for="">Course <span class="color-red">*</span>
+                                        <label class="side" for="">Course 
                                             <br> 
                                             <span class="mini-message">Mata Kuliah</span>
                                         </label>
@@ -112,7 +112,7 @@ function componentJS(){
                             <div class="row">
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
-                                        <label class="side" for="">Teaching Form <span class="color-red">*</span> 
+                                        <label class="side" for="">Teaching Form  
                                             <br>  
                                             <span class="mini-message">Form Mengajar</span>
                                         </label>
@@ -131,7 +131,7 @@ function componentJS(){
                             <div class="row">
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
-                                        <label class="side" for="">Additional Material <span class="color-red">*</span>
+                                        <label class="side" for="">Additional Material 
                                             <br> 
                                             <span class="mini-message">Materi Tambahan</span>
                                         </label>
@@ -298,10 +298,11 @@ function componentJS(){
                 <div v-if="items.length < 1 && toefl == null">Please wait ... </div>
                 <div v-else-if="toefl == null">
                     <h3 style="text-align: center;">List TOEFL</h3>
-                    <table>
+                    <table style="text-align: center;max-height: 300px;overflow: auto;white-space: nowrap;display: block;">
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>File Name</th>
                                 <th>Certificate</th>
                                 <th>Action</th>
                             </tr>
@@ -309,6 +310,7 @@ function componentJS(){
                         <tbody>
                             <tr v-for="(item, index) in items" :key="item.ToeflID">
                                 <td>{{ (index + 1) }}</td>
+                                <td>{{ item.LocationFile }}</td>
                                 <td>
                                     <a :title="getFileName(item.LocationFile)" @click.prevent="download(item)" class="cursor-download">
                                         <i class="icon icon-download"></i>
@@ -333,7 +335,7 @@ function componentJS(){
                         <div class="row">
                             <div>
                                 <div class="column one-third">
-                                    <label class="side" for="">Choose File <span class="color-red">*</span>
+                                    <label class="side" for="">Choose File 
                                         <br> 
                                         <span class="mini-message">Pilih file</span>
                                     </label>
@@ -448,7 +450,7 @@ function componentJS(){
                                 <div class="row">
                                     <div class="form-group clearfix">
                                         <div class="column one-third">
-                                            <label class="side" for="">Activity <span class="color-red">*</span>
+                                            <label class="side" for="">Activity 
                                             <br> 
                                             <span class="mini-message">Nama Aktivitas</span>
                                             </label>
@@ -464,7 +466,7 @@ function componentJS(){
                                 <div class="row">
                                     <div class="form-group clearfix">
                                         <div class="column one-third">
-                                            <label class="side" for="">Date Of Implementation <span class="color-red">*</span>
+                                            <label class="side" for="">Date Of Implementation 
                                                 <br> 
                                                 <span class="mini-message">Tanggal Pelaksanaan</span>
                                             </label>
@@ -491,13 +493,13 @@ function componentJS(){
                                     <div class="form-group clearfix">
                                         <div class="column one-third">
                                             <label class="side" for="">
-                                                Supporting Material <span class="color-red">*</span>
+                                                Supporting Material 
                                                 <br> 
                                                 <span class="mini-message">File Pendukung</span>
                                             </label>
                                         </div>
                                         <div class="column two-thirds">
-                                            <div class="row" style="margin: 0px -10px">
+                                            <div class="row" style="margin: 0px 0px">
                                                 <list-files 
                                                 @delete = "onDeleteMaterial"
                                                 column-id="MaterialID" add-name="supportingMaterials[]" name="supportingMaterials" :files="comdev.SupportingMaterials">
@@ -752,7 +754,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label class="side" for="">
-                                            Year <span class="color-red">*</span>
+                                            Year 
                                             <br> 
                                             <span>Tahun Penelitian</span>
                                         </label>
@@ -769,7 +771,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label class="side" for="">
-                                            Title <span class="color-red">*</span>
+                                            Title 
                                             <br> 
                                             <span>Judul Penelitian</span>
                                         </label>
@@ -786,7 +788,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label class="side" for="">
-                                            Budget Source <span class="color-red">*</span> 
+                                            Budget Source  
                                             <br> 
                                             <span class="mini-message">Sumber Dana</span>
                                         </label>
@@ -803,7 +805,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label for="" class="side">
-                                            Budget <span class="color-red">*</span> 
+                                            Budget  
                                             <br> 
                                             <span class="mini-message">Total Dana</span>
                                         </label>
@@ -820,7 +822,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label class="side">
-                                            Status <span class="color-red">*</span> 
+                                            Status  
                                             <br> 
                                             <span class="mini-message">Status Kepesertaan</span>
                                         </label>
@@ -847,7 +849,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label class="side" for="">
-                                            Research Level <span class="color-red">*</span>
+                                            Research Level 
                                             <br> 
                                             <span class="mini-message">Tingkat Penelitian</span>
                                         </label>
@@ -874,7 +876,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label for="" class="side">
-                                            Publisher <span class="color-red">*</span> 
+                                            Publisher  
                                             <br> 
                                             <span class="mini-message">Penerbit</span>
                                         </label>
@@ -891,7 +893,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label for="" class="side" style="margin-left: 20px;">
-                                            Volume <span class="color-red">*</span> 
+                                            Volume  
                                             <br> 
                                             <span class="mini-message">Volume</span>
                                         </label>
@@ -908,7 +910,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label for="" class="side" style="margin-left: 20px;">
-                                            Number <span class="color-red">*</span> 
+                                            Number  
                                             <br> 
                                             <span class="mini-message">Nomor</span>
                                         </label>    
@@ -925,7 +927,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label for="" class="side" style="margin-left: 20px;">
-                                            Year <span class="color-red">*</span> 
+                                            Year  
                                             <br> 
                                             <span class="mini-message">Tahun</span>
                                         </label>
@@ -942,7 +944,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label for="" class="side"  style="margin-left: 20px;">
-                                            ISSN/ISBN <span class="color-red">*</span> 
+                                            ISSN/ISBN  
                                             <br> 
                                             <span class="mini-message">ISSN/ISBN</span>
                                         </label>
@@ -959,7 +961,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label for="" class="side">
-                                            Publication Title <span class="color-red">*</span> 
+                                            Publication Title  
                                             <br> 
                                             <span class="mini-message">Judul Publikasi</span>
                                         </label>
@@ -976,7 +978,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label for="" class="side">
-                                            Publication Year <span class="color-red">*</span> 
+                                            Publication Year  
                                             <br> 
                                             <span class="mini-message">Tahun Publikasi</span>
                                         </label>
@@ -993,7 +995,7 @@ function componentJS(){
                                 <div class="form-group clearfix">
                                     <div class="column one-third">
                                         <label for="" class="side">
-                                            Supporting Material <span class="color-red">*</span> 
+                                            Supporting Material  
                                             <br> 
                                             <span class="mini-message">File Pendukung</span>                                    
                                         </label>
@@ -1184,6 +1186,8 @@ function componentJS(){
             refreshMask : function(){
                 $('.text-currency').mask('000-000-000-000-000-000-000', { reverse : true });
                 $('.text-currency').mask('000.000.000.000.000.000.000', { reverse : true });
+                $('.text-year').mask('0000');
+                $('.text-number').mask('00000000');
             },
             validatePublicationYear : function(){
                 var _self = this;
@@ -1278,26 +1282,38 @@ function componentJS(){
         props : ['files', 'name', 'columnId', 'addName'],
         template : `
         <div>
-            <span>Your files : </span>
-            <div v-for="(file, index) in files">
-                <span>{{ index + 1 }}.&nbsp;</span>
-                <input type="file" :name="getName(file[columnId])" style="width: 200px;">
-                <i @click="onDelete(file[columnId], $event)" class="cursor-pointer icon icon-trash"></i> &nbsp;
-                <i @click="$event.target.parentNode.children[1].value = '';" class="cursor-pointer icon icon-reject"></i> &nbsp;
-                <a @click.prevent="download(file)" :title="getFileName(file.LocationFile)" class="cursor-download">
-                    <i class="icon icon-download"></i>
-                </tooltip>
-            </div><br>
             <div>
-                <a class="color-blue" @click="isShow = true;"> Do you want to add another files? </a><br>
+                <a class="color-blue cursor-pointer" @click="isShow = !isShow;" style="margin-bottom: 4px;display: block;"> 
+                    <template v-if="!isShow"> Do you want to add another files? </template>
+                    <template v-else> I don't want to add files </template>
+                </a>
                 <template v-if="isShow">
-                    <input  style="width: 200px;" type="file" :name="addName" multiple> 
-                    <i @click="$event.target.parentNode.children[2].value = '';" class="cursor-pointer icon icon-reject"></i>    
-                    <br><br>
-                    <a class="color-blue"  @click="isShow = false">I don't</a>
+                    <input  style="width: 200px;" type="file" :name="addName" multiple>
+                    <i @click="$event.target.parentNode.children[1].value = '';" class="cursor-pointer icon icon-reject"></i>
                 </template>
             </div>
-        <div>
+            <br>
+            <div class="list-files">
+                <span>Your files : </span><br>
+                <div v-for="(file, index) in files" class="file-item">
+                    <div style="width: 20px">
+                        <div>
+                            <i @click="onDelete(file[columnId], $event)" class="cursor-pointer icon icon-trash" style="transform: scale(.8);"></i> &nbsp;
+                            <a @click.prevent="download(file)" :title="getFileName(file.LocationFile)" class="cursor-download">
+                                <i class="icon icon-download" style="transform: scale(.8);"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div style="width: 100%;padding-right: 8px; box-sizing: border-box;">
+                        <div>{{ file.LocationFile }}</div>
+                        <div style="margin-top: 8px;">
+                            <input type="file" :name="getName(file[columnId])" style="width: 200px;" />
+                            <i @click="$event.target.parentNode.children[0].value = '';" class="cursor-pointer icon icon-reject" style="transform: scale(.8);"></i>
+                        </div>
+                    </div>
+                </div>
+            <div>
+        </div>
         `,
         methods : {
             download : function(file){

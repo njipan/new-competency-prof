@@ -2,6 +2,7 @@
 require_once('BaseController.php');
 require_once('repos/CandidateRepository.php');
 require_once('repos/ResearchRepository.php');
+require_once('repos/MaterialRepository.php');
 require_once('requests/UpdateResearchRequest.php');
 require_once('requests/GeneralRequest.php');
 require_once('constants/Subtype.php');
@@ -164,13 +165,13 @@ class Research extends BaseController {
         if(empty($_POST['status'])){
             $errors['status'] = "Can't be empty";
         }
-        if(!is_numeric($_POST['status'])){
+        else if(!is_numeric($_POST['status'])){
             $errors['status'] = "Must be numeric";
         }
         if(empty($_POST['researchLevel'])){
             $errors['researchLevel'] = "Can't be empty";
         }
-        if(!is_numeric($_POST['researchLevel'])){
+        else if(!is_numeric($_POST['researchLevel'])){
             $errors['researchLevel'] = "Must be numeric";
         }
         if(empty($_POST['publisher'])){
@@ -182,8 +183,14 @@ class Research extends BaseController {
         if(empty($_POST['publisherYear'])){
             $errors['publisherYear'] = "Can't be empty";
         }
+        else if(!is_numeric($_POST['publisherYear'])){
+            $errors['publisherYear'] = "Must be numeric";
+        }
         if(empty($_POST['publisherNumber'])){
             $errors['publisherNumber'] = "Can't be empty";
+        }
+        else if(!is_numeric($_POST['publisherNumber'])){
+            $errors['publisherNumber'] = "Must be numeric";
         }
         if(empty($_POST['publisherISSNISBN'])){
             $errors['publisherISSNISBN'] = "Can't be empty";
@@ -194,11 +201,12 @@ class Research extends BaseController {
         if(empty($_POST['publicationYear'])){
             $errors['publicationYear'] = "Can't be empty";
         }
-        if(!is_numeric($_POST['publicationYear'])){
+        else if(!is_numeric($_POST['publicationYear'])){
             $errors['publicationYear'] = "Must be numeric";
         }
 
         $files = $request->getFile();
+        $data = $request->data();
         unset($files['supportingMaterials']);
         $allowed_types = $this->allowed_types['supportingMaterials'];
         foreach($files as $key => $supporting_material_files){
@@ -215,6 +223,13 @@ class Research extends BaseController {
             }
         }
         $supporting_material_files = $request->getFile('supportingMaterials');
+        $materialRepository = new MaterialRepository();
+        $materials = $materialRepository->getMaterialsBySubtype($data['id'], Subtype::$RESEARCH);
+        if(count($materials) + count($supporting_material_files) > 6){
+            $errors['supportingMaterials'] = 'File upload limit reached. Max upload is 6 files.';
+            return $errors;
+        }
+        
         foreach($supporting_material_files as $file){
             if(!$this->checkMimeType($file, $allowed_types)){
                 $errors['supportingMaterials'] = 'Only accept '.implode(", ", $allowed_types).' files';
