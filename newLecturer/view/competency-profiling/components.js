@@ -27,12 +27,12 @@ function componentJS(){
                 <table>
                     <thead>
                         <tr>
-                            <th>No</th>
-                            <th>Teaching Period</th>
-                            <th>Course</th>
-                            <th>Teaching Material</th>
-                            <th>Additional Material</th>
-                            <th>Action</th>
+                            <th style="text-align: center;">No</th>
+                            <th style="text-align: center;">Teaching Period</th>
+                            <th style="text-align: center;">Course</th>
+                            <th style="text-align: center;">Teaching Material</th>
+                            <th style="text-align: center;">Additional Material</th>
+                            <th style="text-align: center;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -296,15 +296,15 @@ function componentJS(){
         template: `
             <div>
                 <div v-if="items.length < 1 && toefl == null">Please wait ... </div>
-                <div v-else-if="toefl == null">
+                <div v-else-if="toefl == null" class="list-toefl-wrapper">
                     <h3 style="text-align: center;">List TOEFL</h3>
                     <table style="text-align: center;max-height: 300px;overflow: auto;white-space: nowrap;display: block;">
                         <thead>
                             <tr>
-                                <th>No</th>
-                                <th>File Name</th>
-                                <th>Certificate</th>
-                                <th>Action</th>
+                                <th style="text-align: center;">No</th>
+                                <th style="text-align: center;">File Name</th>
+                                <th style="text-align: center;">Certificate</th>
+                                <th style="text-align: center;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -530,12 +530,12 @@ function componentJS(){
                 <table>
                     <thead>
                         <tr>
-                            <th>No</th>
-                            <th>Activity Name</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Supporting Materials</th>
-                            <th>Action</th>
+                            <th style="text-align: center;">No</th>
+                            <th style="text-align: center;">Activity Name</th>
+                            <th style="text-align: center;">Start Date</th>
+                            <th style="text-align: center;">End Date</th>
+                            <th style="text-align: center;">Supporting Materials</th>
+                            <th style="text-align: center;">Action</th>
                         </tr>    
                     </thead>
                     <tbody>
@@ -684,22 +684,22 @@ function componentJS(){
                 <table>
                     <thead>
                         <tr>
-                            <th>No</th>
-                            <th>Title</th>
-                            <th>Research Year</th>
-                            <th>Research Level</th>
-                            <th>Budget Resource</th>
-                            <th>Budget</th>
-                            <th>Membership Status</th>
-                            <th>Publisher Name</th>
-                            <th>Volume</th>
-                            <th>Number</th>
-                            <th>ISSN/ISBN</th>
-                            <th>Journal Year (Tahun Jurnal)</th>
-                            <th>Publication Title</th>
-                            <th>Publication Year</th>
-                            <th>Supporting Materials</th>
-                            <th>Action</th>
+                            <th style="text-align: center;">No</th>
+                            <th style="text-align: center;">Title</th>
+                            <th style="text-align: center;">Research Year</th>
+                            <th style="text-align: center;">Research Level</th>
+                            <th style="text-align: center;">Budget Resource</th>
+                            <th style="text-align: center;">Budget</th>
+                            <th style="text-align: center;">Membership Status</th>
+                            <th style="text-align: center;">Publisher Name</th>
+                            <th style="text-align: center;">Volume</th>
+                            <th style="text-align: center;">Number</th>
+                            <th style="text-align: center;">ISSN/ISBN</th>
+                            <th style="text-align: center;">Journal Year (Tahun Jurnal)</th>
+                            <th style="text-align: center;">Publication Title</th>
+                            <th style="text-align: center;">Publication Year</th>
+                            <th style="text-align: center;">Supporting Materials</th>
+                            <th style="text-align: center;">Action</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -182,25 +182,24 @@
                 </template>
             </h2>
             <div @submit.prevent="" v-if="ACTION == ACTION_ADD">
-                {{ candidatesToAdd }}
                 <template v-if="candidates.length < 1">Data is empty ...</template>
                 <div class="freeze-pane" data-fixed-left="1" data-fixed-right="0" data-height="300" v-else>
                     <table class="bordered">
                         <thead>
                             <tr>
-                                <th style="width: 32px;">No</th>
-                                <th style="width: 250px;">Lecture</th>
-                                <th style="width: 200px;">Current JKA</th>
-                                <th style="width: 160px;">Current Grade</th>
-                                <th style="width: 240px;">Next JKA</th>
-                                <th style="width: 240px;">Next Grade</th>
-                                <th style="width: 160px;">Institution</th>
-                                <th style="width: 300px;">Academic Organization</th>
-                                <th style="width: 300px;">Department</th>
-                                <th style="width: 160px;">Behavioral Date</th>
-                                <th style="width: 160px;">Period</th>
-                                <th style="width: 240px;">Reason</th>
-                                <th><input type="checkbox" @click.stop="selectAllCandidateClicked" ref="checkboxAddCandidate"/></th>
+                                <th style="width: 32px; text-align: center;">No</th>
+                                <th style="width: 250px; text-align: center;">Lecture</th>
+                                <th style="width: 200px; text-align: center;">Current JKA</th>
+                                <th style="width: 160px; text-align: center;">Current Grade</th>
+                                <th style="width: 240px; text-align: center;">Next JKA</th>
+                                <th style="width: 240px; text-align: center;">Next Grade</th>
+                                <th style="width: 160px; text-align: center;">Institution</th>
+                                <th style="width: 300px; text-align: center;">Academic Organization</th>
+                                <th style="width: 300px; text-align: center;">Department</th>
+                                <th style="width: 160px; text-align: center;">Behavioral Date</th>
+                                <th style="width: 160px; text-align: center;">Period</th>
+                                <th style="width: 240px; text-align: center;">Reason</th>
+                                <th style="text-align: center;"><input type="checkbox" @click.stop="selectAllCandidateClicked" ref="checkboxAddCandidate"/></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -291,21 +290,21 @@
                     <table class="bordered">
                         <thead>
                         <tr>
-                            <th style="width: 32px;">No</th>
-                            <th style="width: 250px;">Lecture</th>
-                            <th style="width: 160px;">Institution</th>
-                            <th style="width: 300px;">Academic Organization</th>
-                            <th style="width: 300px;">Department</th>
-                            <th style="width: 160px;">Behavioral Date</th>
-                            <th style="width: 160px;">Period</th>
-                            <th style="width: 240px;">Reason</th>
-                            <th style="width: 200px;">Current JKA</th>
-                            <th style="width: 160px;">Current Grade</th>
-                            <th style="width: 240px;">Next JKA</th>
-                            <th style="width: 240px;">Next Grade</th>
-                            <th style="width: 240px;">Status</th>
-                            <th style="width: 50px;">Note</th>
-                            <th style="width: 50px;">Action</th>
+                            <th style="width: 32px; text-align: center;">No</th>
+                            <th style="width: 250px; text-align: center;">Lecture</th>
+                            <th style="width: 160px; text-align: center;">Institution</th>
+                            <th style="width: 300px; text-align: center;">Academic Organization</th>
+                            <th style="width: 300px; text-align: center;">Department</th>
+                            <th style="width: 160px; text-align: center;">Behavioral Date</th>
+                            <th style="width: 160px; text-align: center;">Period</th>
+                            <th style="width: 240px; text-align: center;">Reason</th>
+                            <th style="width: 200px; text-align: center;">Current JKA</th>
+                            <th style="width: 160px; text-align: center;">Current Grade</th>
+                            <th style="width: 240px; text-align: center;">Next JKA</th>
+                            <th style="width: 240px; text-align: center;">Next Grade</th>
+                            <th style="width: 240px; text-align: center;">Status</th>
+                            <th style="width: 50px; text-align: center;">Note</th>
+                            <th style="width: 50px; text-align: center;">Action</th>
                             <th><input type="checkbox" @click.stop="selectAllClicked" ref="checkboxAllCandidate"/></th>
                         </tr>
                         </thead>
