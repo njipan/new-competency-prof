@@ -7,7 +7,6 @@ var subView = {
         sv = this;
         sv.onRequire();
         sv.prepare();
-		elTitle.text('COMPETENCY PROFILING - SETUP PERIOD');
         document.title = 'COMPETENCY PROFILING - SETUP PERIOD';
     },
     prepare: function(){

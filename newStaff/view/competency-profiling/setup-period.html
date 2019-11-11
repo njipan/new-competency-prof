@@ -36,32 +36,27 @@
                     <template v-else="">Setup Period</template>
                 </h2>
                 <div>
-                    <div class="row" v-if="ACTION == ACTION_EDIT">
-                        <div class="column">
-                            <label for="">Period ID <span class="color-red">*</span></label>
-                            <input type="text" v-model="form.period_id" readonly>
-                            <label class="label-message color-red">
-                                {{ "&nbsp;" }}
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div>
                     <div class="row">
                         <div class="column">
-                            <label for="" class="form-label">Institution <span class="color-red">*</span></label>
-                            <span class="custom-combobox">
-                                <select v-model="form.institution" @change="onFormInstitutionChanged">
-                                    <option :value="{}" selected>Please select institution</option>
-                                    <option v-for="institution in institutions" :value="institution" 
-                                    :selected="form.institution.Description == institution.Description">
-                                        {{ institution.InstName }}
-                                    </option>
-                                </select>
-                                <span class="combobox-label">
-                                    {{ form.institution.InstName || "Please select institution" }}
+                            <template v-if="ACTION == ACTION_EDIT">
+                                <label for="" class="form-label">Institution</label>
+                                <input type="text" name="" disabled="" :value="form.institution.InstName" />
+                            </template>
+                            <template v-else>
+                                <label for="" class="form-label">Institution <span class="color-red">*</span></label>
+                                <span class="custom-combobox">
+                                    <select v-model="form.institution" @change="onFormInstitutionChanged">
+                                        <option :value="{}" selected>Please select institution</option>
+                                        <option v-for="institution in institutions" :value="institution" 
+                                        :selected="form.institution.Description == institution.Description">
+                                            {{ institution.InstName }}
+                                        </option>
+                                    </select>
+                                    <span class="combobox-label">
+                                        {{ form.institution.InstName || "Please select institution" }}
+                                    </span>
                                 </span>
-                            </span>
+                            </template>
                             <label class="label-message color-red">
                                 {{ errors.form.institution || "&nbsp;" }}
                             </label>

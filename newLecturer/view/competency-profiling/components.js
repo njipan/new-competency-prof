@@ -1282,17 +1282,19 @@ function componentJS(){
         props : ['files', 'name', 'columnId', 'addName'],
         template : `
         <div>
-            <div>
-                <a class="color-blue cursor-pointer" @click="isShow = !isShow;" style="margin-bottom: 4px;display: block;"> 
-                    <template v-if="!isShow"> Do you want to add another files? </template>
-                    <template v-else> I don't want to add files </template>
-                </a>
-                <template v-if="isShow">
-                    <input  style="width: 200px;" type="file" :name="addName" multiple>
-                    <i @click="$event.target.parentNode.children[1].value = '';" class="cursor-pointer icon icon-reject"></i>
-                </template>
-            </div>
-            <br>
+            <template v-if="files.length < 6">
+                <div>
+                    <a class="color-blue cursor-pointer" style="margin-bottom: 4px;display: block;"> 
+                        <span v-if="!isShow" @click="isShow = !isShow;"> Do you want to add another files? </span>
+                        <span v-else @click="$refs.addInputFiles.click()"> Add another files :  </span>
+                    </a>
+                    <template v-if="isShow">
+                        <input  style="width: 200px;" type="file" :name="addName" multiple ref="addInputFiles">
+                        <i @click="$event.target.parentNode.children[1].value = ''; isShow = false;" class="cursor-pointer icon icon-reject"></i>
+                    </template>
+                </div>
+                <br>
+            </template>
             <div class="list-files">
                 <span>Your files : </span><br>
                 <div v-for="(file, index) in files" class="file-item">

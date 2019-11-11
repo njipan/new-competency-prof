@@ -230,6 +230,7 @@ var subView = {
                     const rules = [
                         _self.STATUS_WAITING,
                         _self.STATUS_DECLINED_LRC,
+                        _self.STATUS_ON_PROCESS,
                         _self.STATUS_ON_REVIEW,
                         _self.STATUS_REVIEWED,
                     ];
@@ -331,7 +332,13 @@ var subView = {
                         BM.successMessage('Status has been changed', 'success', () => {});
                     }).catch(function(err){});
                 },
+                editNextJKA : function(nextJKA, candidate){
+                    var _self = this;
+                    const temp = _self.editForm[candidate.CandidateID];
+                    _self.editForm[candidate.CandidateID] = {...temp, NextJKA : nextJKA};
+                },
                 editNextGradeJKA : function(nextGradeJKA, candidate){
+                    var _self = this;
                     const temp = _self.editForm[candidate.CandidateID];
                     _self.editForm[candidate.CandidateID] = {...temp, NextGradeJKA : nextGradeJKA};
                 },
@@ -387,7 +394,7 @@ var subView = {
                     }
                 },
                 selectedToEditFactory : function(candidate){
-                    return { CandidateTrID : candidate.CandidateID, NextGradeJKA : candidate.NextGradeJKA, LecturerCode : candidate.LecturerCode, Name : candidate.Name };
+                    return { CandidateTrID : candidate.CandidateID, NextGradeJKA : candidate.NextGradeJKA, NextJKA : candidate.NextJKA, LecturerCode : candidate.LecturerCode, Name : candidate.Name };
                 },
                 selectAll : function(){
                     var _self = this;                    
@@ -528,7 +535,7 @@ var subView = {
                         _self.saveUpdate(Object.values(_self.editForm)).then(res => {
                             _self.isSaving = false;
                             _self.editForm = {};
-                            _self.ACTION = null;
+                            _self.candidateErrors = { };
                             BM.successMessage('Data has been saved', 'success', () => {});
                         })
                         .catch(err => {
@@ -617,7 +624,7 @@ var subView = {
                         [_self.STATUS_APPROVED_HOP,_self.STATUS_DECLINED_LRC,_self.STATUS_ON_PROCESS],
                         [_self.STATUS_DECLINED_HOP,_self.STATUS_ON_PROCESS],
                         [_self.STATUS_DECLINED_LRC],
-                        [_self.STATUS_ON_PROCESS,_self.STATUS_ON_REVIEW],
+                        [_self.STATUS_ON_PROCESS],
                         [_self.STATUS_ON_REVIEW, _self.STATUS_ON_PROCESS, _self.STATUS_REVIEWED],
                         [_self.STATUS_REVIEWED]
                     ];

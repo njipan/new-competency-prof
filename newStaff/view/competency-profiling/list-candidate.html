@@ -327,7 +327,7 @@
                             <td>
                                 <div style="width: 240px;">
                                     <span class="custom-combobox" v-if="disableByStatusID(candidate.CandidateID, candidate.StatusID)">
-                                        <select @change="candidate.NextJKA = $event.target.value;">
+                                        <select @change="candidate.NextJKA = $event.target.value;editNextJKA($event.target.value, candidate);">
                                             <option style="display:none"></option>
                                             <option :value="desc" v-for="desc in filterJKA(candidate.NextJKAForFilter)">
                                                 {{ desc }}
