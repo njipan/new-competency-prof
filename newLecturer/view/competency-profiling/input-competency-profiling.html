@@ -322,7 +322,7 @@
                                         v-model="item.startDate" 
                                         :name="`${item.id}[startDate]`" 
                                         field-name="startDate"
-                                        @input="item.errors.startDate = validateStartDate($event, item.endDate)"
+                                        @input="item.errors.startDate = validateStartDate($event, item.endDate, true)"
                                         ></nj-datepicker>
                                         <label class="label-message color-red">
                                             {{ item.errors.startDate }}
@@ -333,7 +333,7 @@
                                         v-model="item.endDate" 
                                         :name="`${item.id}[endDate]`" 
                                         field-name="endDate"
-                                        @input="item.errors.endDate = validateEndDate($event, item.startDate)"
+                                        @input="item.errors.endDate = validateEndDate($event, item.startDate, true)"
                                         ></nj-datepicker>
                                         <label class="label-message color-red">
                                             {{ item.errors.endDate }}

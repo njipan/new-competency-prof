@@ -405,6 +405,11 @@ var subView = {
                 },
                 saveForm : function(){
                     var _self = this;
+                    if(_self.forms.length < 1){
+                        BM.successMessage('Please insert at least one form', 'failed', () => {});
+                        return;
+                    }
+
                     const isErrors = _self.checkErrForms(_self.forms);
                     if(!isErrors) return;
                     
@@ -577,7 +582,7 @@ var subView = {
 
                     return "";
                 },
-                validateStartDate : function(startDate, endDate){
+                validateStartDate : function(startDate, endDate, sameDay=false){
                     let messageStartDate = this.validateDate(startDate);
                     let messageEndDate = this.validateDate(endDate);
                     if(messageStartDate.trim() != ''){
@@ -587,12 +592,13 @@ var subView = {
                         const parseStartDate = moment(startDate,'DD-MM-YYYY');
                         const parseEndDate = moment(endDate,'DD-MM-YYYY');
                         const result = parseEndDate - parseStartDate;
-                        if(parseInt(result) < 0) 
-                            return 'Must be before end date';
+                        const isNotValid = (!sameDay) ? (parseInt(result) > 0) : (parseInt(result) < 0);
+                        const message = (!sameDay) ? 'Must be before end date' : 'Must be at least same or before end date';
+                        if(isNotValid) return message;
                     }
                     return '';
                 },
-                validateEndDate : function(startDate, endDate){
+                validateEndDate : function(startDate, endDate, sameDay=false){
                     let messageStartDate = this.validateDate(startDate);
                     let messageEndDate = this.validateDate(endDate);
                     if(messageEndDate.trim() != ''){
@@ -602,8 +608,10 @@ var subView = {
                         const parseStartDate = moment(startDate,'DD-MM-YYYY');
                         const parseEndDate = moment(endDate,'DD-MM-YYYY');
                         const result = parseEndDate - parseStartDate;
-                        if(parseInt(result) > 0) 
-                            return 'Must be after start date';
+
+                        const isNotValid = (!sameDay) ? (parseInt(result) > 0) : (parseInt(result) > 0);
+                        const message = (!sameDay) ? 'Must be after start date' : 'Must be at least same or after start date';
+                        if(isNotValid) return message;
                     }
                     return '';
                 },
