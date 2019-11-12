@@ -191,6 +191,10 @@ var subView = {
                         })
                     });
                 },
+                validateSelected: function(text=''){
+                    if(typeof text == 'undefined' || text.trim() == '') return 'Must be selected';
+                    return null;
+                },
                 getSubTypes : function(N_ITEM_ID){
                     var _self = this;
                     const subtypes = _self.itemSubTypes.filter(item => (item.N_ITEM_ID == N_ITEM_ID));
@@ -198,7 +202,7 @@ var subView = {
                     return subtypes;
                 },
                 toggleMinMax : function(e){
-                    const parent = e.target.parentElement.parentElement.parentElement.nextElementSibling;
+                    const parent = e.currentTarget.parentElement.parentElement.parentElement.children[1];
                     const classes = [...parent.classList];
                     const hideClass = 'hide';
                     

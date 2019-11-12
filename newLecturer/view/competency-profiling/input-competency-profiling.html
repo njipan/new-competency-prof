@@ -132,14 +132,14 @@
                         </div> 
                         <div class="column two-thirds">
                             <span class="custom-combobox">
-                                <select v-model="form.itemSubType">
+                                <select v-model="form.itemSubType" :disabled="typeof form.itemType.DESCR50 == 'undefined'">
                                     <option :value="{}" selected>Please select sub type</option>
                                     <option v-for="subtype in getSubTypes(form.itemType.N_ITEM_ID)" :value="subtype">
                                         {{ subtype.DESCR50 }}
                                     </option>
                                 </select>
                                 <span class="combobox-label">
-                                    {{ form.itemSubType.DESCR50 || "Choose type first" }} 
+                                    {{ form.itemSubType.DESCR50 || "Please select sub type" }} 
                                 </span>
                             </span>
                             <label class="label-message color-red">
@@ -386,7 +386,7 @@
                                 <label class="side" for="">
                                     Year <span class="color-red">*</span>
                                     <br> 
-                                    <span>Tahun Penelitian</span>
+                                    <span class="mini-message">Tahun Penelitian</span>
                                 </label>
                             </div>
                             <div class="column two-thirds">
@@ -404,7 +404,7 @@
                                 <label class="side" for="">
                                     Title <span class="color-red">*</span>
                                     <br> 
-                                    <span>Judul Penelitian</span>
+                                    <span class="mini-message">Judul Penelitian</span>
                                 </label>
                             </div>
                             <div class="column two-thirds">
@@ -464,7 +464,7 @@
                             <div class="column two-thirds">
                                 <span class="custom-combobox">
                                     <select v-model="item.status" data-field="status" :name="`${item.id}[status]`"
-                                    @change.prevent="item.errors.status = validateRequireText($event.target.value);">
+                                    @change.prevent="item.errors.status = validateSelected($event.target.value);">
                                         <option :value="''">Please select status</option>
                                         <option v-for="status in membershipStatuses" :value="status.StatusKepID" >{{ status.StatusKep }}</option>
                                     </select>
@@ -490,7 +490,7 @@
                             <div class="column two-thirds">
                                 <span class="custom-combobox">
                                     <select v-model="item.researchLevel" :name="`${item.id}[researchLevel]`" data-field="researchLevel"
-                                    @change="item.errors.researchLevel = validateRequireText($event.target.value);">
+                                    @change="item.errors.researchLevel = validateSelected($event.target.value);">
                                         <option :value="''" selected>Please select level</option>
                                         <option v-for="researchLevel in researchLevels" :value="researchLevel.LevelResearchID">
                                             {{ researchLevel.Level }}

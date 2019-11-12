@@ -496,8 +496,6 @@ class Subtypes extends BaseController {
 
         if(empty($comdev['activity']) || trim($comdev['activity']) == '') 
             $messages["activity"] = "Must be filled";
-        else if(strlen($comdev['activity']) > $maxs["activity"] )
-            $messages["activity"] = "Maximum ".$maxs["activity"]." characters";
 
         if(empty($comdev['startDate']) || trim($comdev['startDate']) == '') 
             $messages["startDate"] = "Must be filled";
@@ -546,13 +544,9 @@ class Subtypes extends BaseController {
 
         if(empty($teach['teachingPeriod']) || trim($teach['teachingPeriod']) == '') 
             $messages["teachingPeriod"] = "Must be filled";
-        else if(strlen($teach['teachingPeriod']) > $maxs["teaching_period"] )
-            $messages["teachingPeriod"] = "Maximum ".$maxs["teaching_period"]." characters";
 
         if(empty($teach['course']) || trim($teach['course']) == '') 
             $messages["course"] = "Must be filled";
-        else if(strlen($teach['course']) > $maxs["course"] )
-            $messages["course"] = "Maximum ".$maxs["course"]." characters";
 
         $message = $this->validateFile(
             $files["teachingForm"], 
