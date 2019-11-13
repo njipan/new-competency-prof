@@ -363,7 +363,7 @@
                             <td>
                                 <div style="width: 240px;">
                                     <span class="custom-combobox" v-if="disableStatus(candidate)">
-                                        <select @change.prevent="changeStatus(candidate.CandidateID, $event.target.value);">
+                                        <select @change.prevent="changeStatus(candidate.CandidateID, $event.target.value, $event);">
                                             <option style="display:none"></option>
                                             <option :value="status.StatusID" v-for="status in filterStatuses(candidate.StatusID, candidate.Period)">
                                                 {{ status.Status }}

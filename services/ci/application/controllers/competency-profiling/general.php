@@ -167,10 +167,12 @@ class General extends BaseController {
     }
 
     public function organizations(){
-        $res = $this->sp("Staff_CMS_GetAcademicOrganizationAcadCareer", array(), 'CMS_DB')->result();
-
+        $academics = [];
+        if($result_sets = $this->sp("bn_JKA_General_GetAcademics", array(), self::$JKA_DB)){
+            $academics = $result_sets->result();
+        }
         return $this->load->view("json_view",[
-            'json' => $res
+            'json' => $academics,
         ]);
     }
 
@@ -180,10 +182,13 @@ class General extends BaseController {
     }
 
     public function departments_get(){
-        $result = $this->sp('bn_JKA_GetDepartments',[],self::$JKA_DB)->result();
+        $departments = [];
+        if($result_sets = $this->sp('bn_JKA_General_GetDepartments',[],self::$JKA_DB)){
+            $departments = $result_sets->result();
+        };
 
         return $this->load->view("json_view",[
-            'json' => $result,
+            'json' => $departments,
         ]);
     }
 

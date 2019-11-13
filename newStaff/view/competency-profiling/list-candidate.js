@@ -230,7 +230,6 @@ var subView = {
                     const rules = [
                         _self.STATUS_WAITING,
                         _self.STATUS_DECLINED_LRC,
-                        _self.STATUS_ON_PROCESS,
                         _self.STATUS_ON_REVIEW,
                         _self.STATUS_REVIEWED,
                     ];
@@ -310,9 +309,12 @@ var subView = {
                 changeStatusAPI : function(data){
                     return axios.post('candidate/statuses', data);
                 },
-                changeStatus : function(candidate_id, status_id){
+                changeStatus : function(candidate_id, status_id, e){
                     var _self = this;
-                    if(!confirm('Are you sure want to change status to '+ _self.statuses[status_id - 1].Status +' ?')) return;
+                    if(!confirm('Are you sure want to change status to '+ _self.statuses[status_id - 1].Status +' ?')) {
+                        $(e.currentTarget).prop('selectedIndex',0);
+                        return;
+                    }
                     const data = {
                         candidate_id,
                         status_id
@@ -330,7 +332,7 @@ var subView = {
                         });
                         _self.candidates = [...candidates];
                         BM.successMessage('Status has been changed', 'success', () => {});
-                    }).catch(function(err){});
+                    }).catch(function(err){ $(e.currentTarget).prop('selectedIndex',0); });
                 },
                 editNextJKA : function(nextJKA, candidate){
                     var _self = this;
@@ -619,14 +621,14 @@ var subView = {
                     var _self = this;
                     var rules = [
                         [-1],
-                        [_self.STATUS_OPEN], //NULL
-                        [_self.STATUS_WAITING,_self.STATUS_APPROVED_HOP,_self.STATUS_DECLINED_HOP],
-                        [_self.STATUS_APPROVED_HOP,_self.STATUS_DECLINED_LRC,_self.STATUS_ON_PROCESS],
-                        [_self.STATUS_DECLINED_HOP,_self.STATUS_ON_PROCESS],
+                        [], //NULL
+                        [_self.STATUS_APPROVED_HOP,_self.STATUS_DECLINED_HOP],
+                        [_self.STATUS_DECLINED_LRC,_self.STATUS_ON_PROCESS],
+                        [_self.STATUS_DECLINED_LRC,_self.STATUS_ON_PROCESS],
                         [_self.STATUS_DECLINED_LRC],
-                        [_self.STATUS_ON_PROCESS],
-                        [_self.STATUS_ON_REVIEW, _self.STATUS_ON_PROCESS, _self.STATUS_REVIEWED],
-                        [_self.STATUS_REVIEWED]
+                        [_self.STATUS_ON_REVIEW],
+                        [],
+                        []
                     ];
                     if(period == null) rules[1].push(_self.STATUS_ON_PROCESS);
                     return [..._self._self.statuses].filter((status) => {
@@ -648,9 +650,12 @@ var subView = {
                 },
                 filteredDepartments(){
                     var _self = this;
-                    var org = _self.form.organization.ACAD_ORG;
+                    var org = _self.form.organization.ACAD_ORG || '*';
+                    var inst = _self.form.institution.Inst || '*';
+                    if(org == '*') return [..._self.departments];
+                    
                     return _self.departments.filter((dep) => {
-                        return dep.Org == org;
+                        return dep.Org == org && dep.Inst == inst;
                     });
                 }
             }

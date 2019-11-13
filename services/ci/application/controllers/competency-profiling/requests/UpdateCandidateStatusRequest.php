@@ -1,6 +1,7 @@
 <?php
 require_once(__DIR__.'/../contracts/AbstractRequest.php');
 require_once(__DIR__.'/../repos/CandidateRepository.php');
+require_once(__DIR__.'/../constants/CandidateStatusType.php');
 
 class UpdateCandidateStatusRequest extends AbstractRequest {
 
@@ -11,24 +12,26 @@ class UpdateCandidateStatusRequest extends AbstractRequest {
         $status_id_to_be_changed = $this->request['status_id'];
         if(empty($candidate = $candidate_repo->getCandidateByID($candidate_id))){
             return [
-                'message' => 'Any data in request is invalid',
+                'message' => 'Invalid request parameter',
             ];
         }
 
         $rules = [
             [],
-            [1,6], 
-            [2,3,4],
-            [3,5,6],
-            [4,6],
-            [5],
-            [6,7],
-            [7,6,8],
+            [CandidateStatusType::$OPEN, CandidateStatusType::$WAITING_HOP], 
+            [CandidateStatusType::$WAITING_HOP, CandidateStatusType::$APPROVED_HOP, CandidateStatusType::$DECLINED_HOP],
+            [CandidateStatusType::$APPROVED_HOP,CandidateStatusType::$DECLINED_LRC,CandidateStatusType::$ON_PROCESS],
+            [CandidateStatusType::$DECLINED_HOP, CandidateStatusType::$DECLINED_LRC, CandidateStatusType::$ON_PROCESS],
+            [CandidateStatusType::$DECLINED_LRC],
+            [CandidateStatusType::$ON_PROCESS,CandidateStatusType::$ON_REVIEW],
+            [CandidateStatusType::$ON_REVIEW,CandidateStatusType::$ON_PROCESS,CandidateStatusType::$REVIEWED],
             []
         ];
+        if($candidate->StartDt == null) $rules[1][] = CandidateStatusType::$ON_PROCESS;
+
         $rule_validate = !empty($rules[$candidate->StatusID]) && in_array($status_id_to_be_changed, $rules[$candidate->StatusID]);
         if(!$rule_validate){
-            $errors['message'] = 'Status is not valid';
+            $errors['message'] = 'Status cannot be changed';
         }
         return $errors;
     }
