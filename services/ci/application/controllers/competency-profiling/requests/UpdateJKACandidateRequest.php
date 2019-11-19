@@ -21,13 +21,21 @@ class UpdateJKACandidateRequest extends AbstractRequest {
             $levels[$item->N_JKA_ID] = $item;
         }
         
-        $reasons = $reasonRepo->all() ?: [];
+        $reasons_set = $reasonRepo->all() ?: [];
+        $reasons = [];
+        foreach ($reasons_set as $reason) {
+            $reason_id = $reason->ReasonID;
+            $reasons['reason-'.$reason_id] = $reason;
+        }
 
     	if(empty($data)) return ['message' => 'Please select at least one data'];
     	try{
     		foreach ($data as $candidate_item) {
                 $candidate_id = $candidate_item['CandidateTrID'];
 	    		$candidate = $candidateRepository->getCandidateByID($candidate_id);
+                $currentJKA = $levels[$candidate->N_JKA_ID]->Descr;
+                $currentGradeJKA = $candidate->N_JKA_ID;
+                
 	    		if(empty($candidate)){
                     $errors['candidates'][$candidate_id] = true;
                     continue;  
@@ -36,8 +44,8 @@ class UpdateJKACandidateRequest extends AbstractRequest {
                     $errors['candidates'][$candidate_id] = true;
                     continue;  
                 }
-	    		else if(strcasecmp($candidate_item['NextGradeJKA'], $candidate->NextGradeJKA) == -1){
-                    $errors['candidates'][$candidate_id] = true;
+	    		else if(strcasecmp($candidate_item['NextGradeJKA'], $currentGradeJKA) < 1){
+                    $errors['candidates'][$candidate_id] = CandidateError::$CURRENT_JKA;
                     continue;
                 }
                 $currentGradeJKA = $candidate->N_JKA_ID;
@@ -53,6 +61,10 @@ class UpdateJKACandidateRequest extends AbstractRequest {
                     $errors['candidates'][$candidate_id] = CandidateError::$NEXT_JKA;
                     continue;
                 }
+                else if(empty($reasons['reason-'.$candidate_item['ReasonID']])){
+                    $errors['candidates'][$candidate_id] = CandidateError::$REASON;
+                    continue;
+                }
 	    	}
     	}catch(\Exception $e){
     		$errors['message'] = 'Error occured when updating data';
@@ -66,6 +78,7 @@ class UpdateJKACandidateRequest extends AbstractRequest {
         $candidates = $this->data();
         $xml = $this->array2xml($candidates, false);
     	return [
+            '_UserUp' => $_SESSION['employeeID'],
     		'_Data' => $xml,
     	];
     }

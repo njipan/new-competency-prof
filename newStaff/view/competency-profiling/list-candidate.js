@@ -75,6 +75,7 @@ var subView = {
             isFetchingPeriod : false,
             isSearching : false,
             isPrinting : false,
+            declinedCandidates : {},
             popup : {
                 note : null,
             },
@@ -126,12 +127,23 @@ var subView = {
                         _self.reasons = responses[5];
                         _self.statuses = responses[6];
 
-                        _self.levelDescs = _self.levelGrades.reduce((result, item) => {
-                            if(!result.includes(item.Descr)) result.push(item.Descr);
-                            return result;
-                        }, []);
+                        var leveldescs = [];
+                        var levelgrades = [];
+                        var startWith = 65;
+                        [ ..._self.levelGrades ].forEach((item, index) => {
+                            if(!leveldescs.includes(item.Descr)) leveldescs.push(item.Descr);
+
+                            let isEnd = false;
+                            if(item.N_JKA_ID.charCodeAt(0) != startWith && index != 0){
+                                levelgrades[levelgrades.length - 1].isEnd = true;
+                                startWith++;
+                            }
+                            levelgrades.push({ ...item, isEnd });
+                        });
+                        _self.levelDescs = [ ...leveldescs ];
+                        _self.levelGrades = [ ...levelgrades ];
+
                         _self.isFormLoading = false;
-                        $('.has-tooltip').binus_tooltip();
                     });
                 }).catch(() => {
                     BM.successMessage('You are not allowed to see this page', 'failed', () => {
@@ -151,6 +163,18 @@ var subView = {
                             resolve(true);
                         });
                     });
+                },
+                editForm: function(newVal, oldVal){
+                    var _self = this;
+                    if(Object.keys(newVal).length < 1) {
+                        _self.$refs.checkboxAllCandidate.checked = false;
+                    }
+                },
+                candidatesToAdd : function(newVal, oldVal){
+                    var _self = this;
+                    if(newVal.length < 1){
+                        _self.$refs.checkboxAllCandidate.checked = false;
+                    }
                 }
             },
             methods : {
@@ -158,11 +182,11 @@ var subView = {
                     var _self = this;
                     return statusId == _self.STATUS_OPEN && _self.editForm[candidateId];
                 },
-                filterJKA : function(jka){
-                    console.log('sadfdsasadf');
+                filterJKA : function(jka, gradeJKA=null){
                     var _self = this;
                     let temp = [..._self.levelDescs] || [];
                     let idx = 0;
+                    console.log(gradeJKA);
                     
                     for(let item in temp){
                         if(temp[item].toLowerCase() == jka.toLowerCase()){
@@ -170,7 +194,13 @@ var subView = {
                             break;
                         }
                     }
-                    return temp.slice(idx, 5);
+                    temp = temp.slice(idx, 5);
+                    if(gradeJKA == null) return temp;
+
+                    const level = _self.levelGrades.find((item) => item.N_JKA_ID == gradeJKA);
+                    if(level.isEnd) temp.shift();
+
+                    return temp;
                 },
                 onDeleteCandidates : function(){
                     var _self = this;
@@ -395,8 +425,29 @@ var subView = {
                         _self.checkedCandidates = {};
                     }
                 },
+                updateReasonLabel : function(reasonId, candidateId){
+                    var _self = this;
+                    const refName = `reason${candidateId}`;
+                    _self.$refs[refName][0].innerText = _self.reasons[reasonId].Reason;
+                },
+                editReason : function(reasonId, candidate){
+                    var _self = this;
+                    const temp = _self.editForm[candidate.CandidateID];
+                    _self.editForm[candidate.CandidateID] = { ...temp, ReasonID : reasonId };
+                },
                 selectedToEditFactory : function(candidate){
-                    return { CandidateTrID : candidate.CandidateID, NextGradeJKA : candidate.NextGradeJKA, NextJKA : candidate.NextJKA, LecturerCode : candidate.LecturerCode, Name : candidate.Name };
+                    var _self = this;
+                    if(candidate.StatusID == _self.STATUS_DECLINED_LRC){
+                        _self.declinedCandidates[candidate.CandidateID] = true;
+                    }
+                    return { 
+                        CandidateTrID : candidate.CandidateID, 
+                        NextGradeJKA : candidate.NextGradeJKA, 
+                        NextJKA : candidate.NextJKA, 
+                        LecturerCode : candidate.LecturerCode, 
+                        Name : candidate.Name,
+                        ReasonID : candidate.ReasonID
+                    };
                 },
                 selectAll : function(){
                     var _self = this;                    
@@ -426,6 +477,12 @@ var subView = {
                     else{
                         delete _self.editForm[id];
                         _self.$refs.checkboxAllCandidate.checked = false;
+
+                        if(candidate.StatusID == _self.STATUS_DECLINED_LRC){
+                            const declinedCandidates = _self.declinedCandidates;
+                            delete declinedCandidates[candidate.CandidateID];
+                            _self.declinedCandidates = { ...declinedCandidates };    
+                        }
                     }
                     _self.editForm = Object.assign({}, _self.editForm);
                 },
@@ -612,10 +669,13 @@ var subView = {
                             break;
                         }
                     }
-                    grades = [...grades].slice(start, 99);
-                    return [...grades].filter(item => {
+                    grades = [...grades].slice(start, 99).filter(item => {
                         return item.Descr == text;
                     });
+                    const level = _self.levelGrades.find((item) => item.N_JKA_ID == based);
+                    if(!level.isEnd) grades.shift();
+                    
+                    return grades;
                 },
                 filterStatuses(current_status, period='') {
                     var _self = this;

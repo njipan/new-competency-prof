@@ -297,7 +297,7 @@
                             <th style="width: 300px; text-align: center;">Department</th>
                             <th style="width: 160px; text-align: center;">Behavioral Date</th>
                             <th style="width: 160px; text-align: center;">Period</th>
-                            <th style="width: 240px; text-align: center;">Reason</th>
+                            <th><div style="width: 240px; text-align: center;">Reason</div></th>
                             <th style="width: 200px; text-align: center;">Current JKA</th>
                             <th style="width: 160px; text-align: center;">Current Grade</th>
                             <th style="width: 240px; text-align: center;">Next JKA</th>
@@ -321,7 +321,20 @@
                             <td><div style="width: 300px;">{{ candidate.DepName || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.FormattedBehaviorDate || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.Period || "NULL" }}</div></td>
-                            <td><div style="width: 160px;">{{ candidate.Reason || "-" }}</div></td>
+                            <td>
+                                <div class="custom-combobox" v-if="disableByStatusID(candidate.CandidateID, candidate.StatusID)">
+                                    <select @change="editReason($event.target.value, candidate); candidate.ReasonID = $event.target.value;">
+                                        <option style="display:none"></option>
+                                        <option :value="reason.ReasonID" v-for="reason in reasons">
+                                            {{ reason.Reason }}
+                                        </option>
+                                    </select>
+                                    <span class="combobox-label">{{ reasons[candidate.ReasonID].Reason }}</span>
+                                </div>
+                                <div style="width: 240px; text-align: center;" v-else>
+                                    {{ reasons[candidate.ReasonID].Reason || "-" }}
+                                </div>
+                            </td>
                             <td><div style="width: 200px;">{{ candidate.CurrentJKA || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.CurrentGradeJKA }}</div></td>
                             <td>
@@ -329,7 +342,7 @@
                                     <span class="custom-combobox" v-if="disableByStatusID(candidate.CandidateID, candidate.StatusID)">
                                         <select @change="candidate.NextJKA = $event.target.value;editNextJKA($event.target.value, candidate);">
                                             <option style="display:none"></option>
-                                            <option :value="desc" v-for="desc in filterJKA(candidate.NextJKAForFilter)">
+                                            <option :value="desc" v-for="desc in filterJKA(candidate.CurrentJKA, candidate.CurrentGradeJKA)">
                                                 {{ desc }}
                                             </option>
                                         </select>
@@ -347,7 +360,7 @@
                                     <span class="custom-combobox" v-if="disableByStatusID(candidate.CandidateID, candidate.StatusID)">
                                         <select @change="candidate.NextGradeJKA = $event.target.value;editNextGradeJKA($event.target.value, candidate);">
                                             <option style="display:none"></option>
-                                            <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA, candidate.NextGradeJKAForFilter)">
+                                            <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA, candidate.CurrentGradeJKA)">
                                                 {{ grade.N_JKA_ID }}
                                             </option>
                                         </select>
@@ -404,12 +417,14 @@
             </div>
             <br>
             <div class="button-group">
-                <nj-button v-if="Object.keys(editForm).length > 0 || Object.keys(candidatesToAdd).length > 0" @click="onSave" :is-processed="isSaving" display-text="SAVE" 
-                    animation-color="white"></nj-button>
-                <nj-button v-if="Object.keys(editForm).length > 0" @click="onDeleteCandidates" :is-processed="isDeleting" display-text="DELETE" animation-color="white"></nj-button>
+                <template v-if="Object.keys(declinedCandidates).length < 1">
+                    <nj-button v-if="Object.keys(editForm).length > 0 || Object.keys(candidatesToAdd).length > 0" @click="onSave" :is-processed="isSaving" display-text="SAVE" 
+                        animation-color="white"></nj-button>
+                    <nj-button v-if="Object.keys(editForm).length > 0" @click="onDeleteCandidates" :is-processed="isDeleting" display-text="DELETE" animation-color="white"></nj-button>    
+                </template>
                 <template v-if="ACTION != ACTION_ADD">
                     <nj-button @click="onPrintClicked" :is-processed="isPrinting" display-text="PRINT" animation-color="white"></nj-button>
-                    <nj-button v-if="!isPeriodNull() && Object.keys(editForm).length > 0" @click="onPost" :is-processed="isPosting" display-text="POST" animation-color="white"></nj-button>    
+                    <nj-button v-if="!isPeriodNull() && Object.keys(editForm).length > 0 && Object.keys(declinedCandidates).length < 1" @click="onPost" :is-processed="isPosting" display-text="POST" animation-color="white"></nj-button>        
                 </template>
             </div>
         </div>
