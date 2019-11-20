@@ -78,6 +78,8 @@ var subView = {
             declinedCandidates : {},
             popup : {
                 note : null,
+                notes : [],
+                candidate: null
             },
             checkedCandidates : {},
             searchText : null,
@@ -345,10 +347,15 @@ var subView = {
                         $(e.currentTarget).prop('selectedIndex',0);
                         return;
                     }
+
                     const data = {
                         candidate_id,
                         status_id
                     };
+
+                    if(status_id == _self.STATUS_DECLINED_LRC){
+                        data.note = prompt('Input note : ');
+                    }
                     
                     _self.changeStatusAPI(data).then(function(response){
                         delete _self.editForm[candidate_id];
@@ -361,8 +368,21 @@ var subView = {
                             return candidate;
                         });
                         _self.candidates = [...candidates];
+                        _self.$refs.checkboxAllCandidate.checked = false;
                         BM.successMessage('Status has been changed', 'success', () => {});
                     }).catch(function(err){ $(e.currentTarget).prop('selectedIndex',0); });
+                },
+                showNotes : function(candidate){
+                    var _self = this;
+
+                    axios.post('candidate/notes', { candidate_id : candidate.CandidateID })
+                        .then((res) => {
+                            const newData = { candidate, notes : res.data };
+                            _self.popup = { ..._self.popup, ...newData };
+                        })
+                        .catch((err) => {
+                           _self.popup = { candidate: null, notes : [] };
+                        });
                 },
                 editNextJKA : function(nextJKA, candidate){
                     var _self = this;

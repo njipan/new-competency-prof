@@ -112,4 +112,16 @@ class CandidateRepository extends AbstractRepository{
         return $candidates->result();
     }
 
+    public function getNotesByCandidateId($candidate_id){
+        $params = [ 
+            '_CandidateID' => $candidate_id,
+        ];
+        if(!$notes = $this->sp('bn_JKA_GetNotesByCandidateID', $params, self::$JKA_DB)){
+            return null;
+        }
+        return $notes->result();
+
+    }
+    
+
 }

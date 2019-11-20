@@ -12,8 +12,10 @@ require_once('requests/DeleteMultipleCandidateRequest.php');
 
 require_once('repos/CandidateRepository.php');
 require_once('repos/StaffRepository.php');
+require_once('repos/NoteRepository.php');
 
 require_once('constants/CandidateStatusType.php');
+require_once('constants/NoteRoleType.php');
 
 class Candidate extends BaseController {
 
@@ -437,8 +439,41 @@ class Candidate extends BaseController {
             return $this->httpRequestInvalid('Error occured when changing status');
         }
 
+        if($data['status_id'] == CandidateStatusType::$DECLINED_LRC){
+            $noteRepo = new NoteRepository();
+            $params_candidate_note = [
+                '_User' => $_SESSION['employeeID'],
+                '_CandidateID' => $data['candidate_id'],
+                '_StatusID' => $data['status_id'],
+                '_Note' => $data['note'],
+                '_RoleName' => NoteRoleType::$LRC,
+            ];
+            $candidate_note = $noteRepo->createOrUpdate($params_candidate_note);
+        }
+
         return $this->load->view('json_view', [
             'json' => $candidate,
+        ]);
+    }
+
+    public function notes(){
+        return $this->restUris(__FUNCTION__);
+    }
+
+    public function notes_post(){
+        $request = new GeneralRequest();
+        $data = $request->data();
+
+        if(empty($data['candidate_id'])){
+            return $this->httpRequestInvalid('Invalid parameter request');
+        }
+        $candidate_id = $data['candidate_id'];
+
+        $candidateRepo = new CandidateRepository();
+        $notes = $candidateRepo->getNotesByCandidateId($candidate_id);
+
+        return $this->load->view('json_view', [
+            'json' => $notes,
         ]);
     }
 

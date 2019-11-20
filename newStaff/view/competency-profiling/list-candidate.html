@@ -394,7 +394,7 @@
                             <td>
                                 <div style="width: 50px;">
                                     <tooltip title="Click to see notes">
-                                        <i class="icon icon-widget-language-skill" style="cursor: pointer;" @click="popup.note = candidate.Note"></i>
+                                        <i class="icon icon-widget-language-skill" style="cursor: pointer;" @click="showNotes(candidate)"></i>
                                     </tooltip>
                                 </div>
                             </td>
@@ -430,10 +430,17 @@
         </div>
     </div>
     <br>
-    <nj-popup @close="popup.note = null" v-if="popup.note != null">
+    <nj-popup @close="popup.candidate = null" v-if="popup.candidate != null">
         <div class="p-wrapper shadow-xl" style="background-color: white;">
-            <div class="search-filter-form" style="margin: 0;padding: 12px;width: 500px;">
-                <p>{{ popup.note }}</p>
+            <div class="search-filter-form" style="margin: 0;padding: 12px;width: 500px; max-height: 360px;overflow: auto;">
+                <p>
+                    Lecture Code : {{ popup.candidate.LecturerCode }} <br>
+                    Lecture Name : {{ popup.candidate.Name }}
+                </p>
+                <div v-for="note in popup.notes" class="search-filter-form" style="padding: 12px;margin:  4px 0;">
+                    <p style="margin: 12px 0;">{{ note.Note }}</p>
+                    <div style="font-size: 12px;text-align: right;">{{ note.RoleName }}, {{ note.DateUp || note.DateIn }}</div>
+                </div>
             </div>
         </div>
     </nj-popup>
