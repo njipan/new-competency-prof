@@ -16,6 +16,12 @@ class UpdateCandidateStatusRequest extends AbstractRequest {
             ];
         }
 
+        if($status_id_to_be_changed == CandidateStatusType::$DECLINED_LRC && empty($this->request['note'])){
+            return [
+                'message' => 'Note must be filled',
+            ];
+        }
+
         $rules = [
             [],
             [CandidateStatusType::$OPEN, CandidateStatusType::$WAITING_HOP], 

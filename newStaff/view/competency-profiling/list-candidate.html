@@ -50,6 +50,20 @@
         overflow: hidden;
     }
 
+    .note-role-name{
+        background-color: #34aee2;
+        padding: 2px 4px;
+        border-radius: 4px;
+        color: white;
+        letter-spacing: 1px;
+    }
+    .note-date{
+        background-color: #f48b31;
+        padding: 2px 4px;
+        border-radius: 4px;
+        color: white;
+    }
+
 </style>
 <div id="list-candidate-app">
     <div class="p-wrapper form-full search-filter-form">
@@ -297,7 +311,7 @@
                             <th style="width: 300px; text-align: center;">Department</th>
                             <th style="width: 160px; text-align: center;">Behavioral Date</th>
                             <th style="width: 160px; text-align: center;">Period</th>
-                            <th style="width: 240px; text-align: center;">Reason</th>
+                            <th><div style="width: 240px; text-align: center;">Reason</div></th>
                             <th style="width: 200px; text-align: center;">Current JKA</th>
                             <th style="width: 160px; text-align: center;">Current Grade</th>
                             <th style="width: 240px; text-align: center;">Next JKA</th>
@@ -321,7 +335,20 @@
                             <td><div style="width: 300px;">{{ candidate.DepName || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.FormattedBehaviorDate || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.Period || "NULL" }}</div></td>
-                            <td><div style="width: 160px;">{{ candidate.Reason || "-" }}</div></td>
+                            <td>
+                                <div class="custom-combobox" v-if="disableByStatusID(candidate.CandidateID, candidate.StatusID)">
+                                    <select @change="editReason($event.target.value, candidate); candidate.ReasonID = $event.target.value;">
+                                        <option style="display:none"></option>
+                                        <option :value="reason.ReasonID" v-for="reason in reasons">
+                                            {{ reason.Reason }}
+                                        </option>
+                                    </select>
+                                    <span class="combobox-label">{{ reasons[candidate.ReasonID].Reason }}</span>
+                                </div>
+                                <div style="width: 240px; text-align: center;" v-else>
+                                    {{ reasons[candidate.ReasonID].Reason || "-" }}
+                                </div>
+                            </td>
                             <td><div style="width: 200px;">{{ candidate.CurrentJKA || "-" }}</div></td>
                             <td><div style="width: 160px;">{{ candidate.CurrentGradeJKA }}</div></td>
                             <td>
@@ -329,7 +356,7 @@
                                     <span class="custom-combobox" v-if="disableByStatusID(candidate.CandidateID, candidate.StatusID)">
                                         <select @change="candidate.NextJKA = $event.target.value;editNextJKA($event.target.value, candidate);">
                                             <option style="display:none"></option>
-                                            <option :value="desc" v-for="desc in filterJKA(candidate.NextJKAForFilter)">
+                                            <option :value="desc" v-for="desc in filterJKA(candidate.CurrentJKA, candidate.CurrentGradeJKA)">
                                                 {{ desc }}
                                             </option>
                                         </select>
@@ -347,7 +374,7 @@
                                     <span class="custom-combobox" v-if="disableByStatusID(candidate.CandidateID, candidate.StatusID)">
                                         <select @change="candidate.NextGradeJKA = $event.target.value;editNextGradeJKA($event.target.value, candidate);">
                                             <option style="display:none"></option>
-                                            <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA, candidate.NextGradeJKAForFilter)">
+                                            <option :value="grade.N_JKA_ID" v-for="grade in filterLevelGrades(candidate.NextJKA, candidate.CurrentGradeJKA)">
                                                 {{ grade.N_JKA_ID }}
                                             </option>
                                         </select>
@@ -381,7 +408,7 @@
                             <td>
                                 <div style="width: 50px;">
                                     <tooltip title="Click to see notes">
-                                        <i class="icon icon-widget-language-skill" style="cursor: pointer;" @click="popup.note = candidate.Note"></i>
+                                        <i class="icon icon-widget-language-skill" style="cursor: pointer;" @click="showNotes(candidate)"></i>
                                     </tooltip>
                                 </div>
                             </td>
@@ -404,21 +431,47 @@
             </div>
             <br>
             <div class="button-group">
-                <nj-button v-if="Object.keys(editForm).length > 0 || Object.keys(candidatesToAdd).length > 0" @click="onSave" :is-processed="isSaving" display-text="SAVE" 
-                    animation-color="white"></nj-button>
-                <nj-button v-if="Object.keys(editForm).length > 0" @click="onDeleteCandidates" :is-processed="isDeleting" display-text="DELETE" animation-color="white"></nj-button>
+                <template v-if="Object.keys(declinedCandidates).length < 1">
+                    <nj-button v-if="Object.keys(editForm).length > 0 || Object.keys(candidatesToAdd).length > 0" @click="onSave" :is-processed="isSaving" display-text="SAVE" 
+                        animation-color="white"></nj-button>
+                    <nj-button v-if="Object.keys(editForm).length > 0" @click="onDeleteCandidates" :is-processed="isDeleting" display-text="DELETE" animation-color="white"></nj-button>    
+                </template>
                 <template v-if="ACTION != ACTION_ADD">
                     <nj-button @click="onPrintClicked" :is-processed="isPrinting" display-text="PRINT" animation-color="white"></nj-button>
-                    <nj-button v-if="!isPeriodNull() && Object.keys(editForm).length > 0" @click="onPost" :is-processed="isPosting" display-text="POST" animation-color="white"></nj-button>    
+                    <nj-button v-if="!isPeriodNull() && Object.keys(editForm).length > 0 && Object.keys(declinedCandidates).length < 1" @click="onPost" :is-processed="isPosting" display-text="POST" animation-color="white"></nj-button>        
                 </template>
             </div>
         </div>
     </div>
     <br>
-    <nj-popup @close="popup.note = null" v-if="popup.note != null">
+    <nj-popup @close="popup.isShow = false;" v-if="popup.isShow">
         <div class="p-wrapper shadow-xl" style="background-color: white;">
-            <div class="search-filter-form" style="margin: 0;padding: 12px;width: 500px;">
-                <p>{{ popup.note }}</p>
+            <div class="search-filter-form" style="margin: 0;padding: 12px;width: 500px; height: 360px;overflow: auto;position: relative;">
+                <div v-if="popup.isFetching" class="page-screen rel">
+                    <div class="nj-loading m">
+                        <div class="item"></div>
+                        <div class="item"></div>
+                        <div class="item"></div>
+                    </div>
+                </div>
+                <template v-else>
+                    <p>
+                        Lecture Code : {{ popup.candidate.LecturerCode }} <br>
+                        Lecture Name : {{ popup.candidate.Name }} <br>
+                        Status : {{ statuses[popup.candidate.StatusID - 1].Status }}
+                    </p>
+                    <div v-if="popup.candidate.StatusID == 1 || popup.candidate.StatusID == 2 || popup.notes.length < 1">Note : - </div>
+                    <template v-else>
+                        <div>Notes : </div>
+                        <div v-for="note in popup.notes" class="search-filter-form" style="padding: 12px;margin:  4px 0;">
+                            <p style="margin: 12px 0;">{{ note.Note }}</p>
+                            <div style="font-size: 12px;text-align: left;">
+                                <span class="note-role-name" style="margin-right: 2px;">{{ note.RoleName }}</span>
+                                <span class="note-date">{{ note.FormattedDateUp || note.FormattedDateIn }}</span>
+                            </div>
+                        </div>
+                    </template>
+                </template>
             </div>
         </div>
     </nj-popup>

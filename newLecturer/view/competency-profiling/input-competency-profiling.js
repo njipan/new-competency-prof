@@ -483,14 +483,15 @@ var subView = {
 
                     return insertUris[subtype];
                 },
-                resetFile : function(index, e){
+                resetFile : function(index, e, isOptional=false){
                     const parent = e.target.parentElement;
                     var fileElement = filterElement(parent, 'input[type=file]')[0];
                     const fieldName = fileElement.getAttribute('data-field');
                     fileElement.value = '';
                     if(index == null) return;
                     
-                    this.forms[index].errors[fieldName] = 'File must be selected';
+                    if(!isOptional) this.forms[index].errors[fieldName] = 'File must be selected';
+                    else this.forms[index].errors[fieldName] = null;
                 },
                 validateSizeAndMimeType : function(files, allowedTypes=[], MAX_SIZE=this.MAX_SIZE_FILE){
                     const maxSizeInMB = MAX_SIZE / 1000000;
@@ -557,12 +558,19 @@ var subView = {
                     else if(files.length < 1) return 'File must be selected';
                     else return null; 
                 },
-                filesChanged : function(e, index='', allowedTypes=[], size=this.MAX_SIZE_FILE){
+                additionalMaterialsValidated : function(targetFiles, allowedTypes=[], size=20000000){
+                    var _self = this;
+                    const files = [ ...targetFiles ];
+
+                    if(files.length < 1) return null;
+                    return _self.validateSizeAndMimeType(files, allowedTypes);
+                },
+                filesChanged : function(e, index='', allowedTypes=[], size=20000000){
                     var _self = this;
                     const files = [...e.target.files];
                     const fieldName = e.target.getAttribute('data-field');
                     let message = _self.isAnyFiles(files,e.target.value);
-                    message = message || _self.validateSizeAndMimeType(files, allowedTypes);
+                    message = message || _self.validateSizeAndMimeType(files, allowedTypes, size);
                     _self.forms[index].errors[fieldName] = message || '';
                 },
                 isEmpty : function(text){

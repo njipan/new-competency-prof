@@ -158,7 +158,8 @@
         </form>
     </div>
     <nj-popup v-if="ACTION_TYPE == TYPE_CREATE && modalTypeState == TOEFL" @close="onCloseUploadToefl">
-        <form :ref="TOEFL" class="shadow-md" style="background-color: white;width: 450px; padding: 20px;" @submit.prevent="">
+        <form :ref="TOEFL" class="shadow-md" style="background-color: white;width: 450px; padding: 20px; position: relative;" @submit.prevent="">
+            <div style="font-size: 16px;color: #5e5e5e;font-weight: 600;position: absolute;cursor: pointer;top: 20px;right: 22px; padding: 8px; z-index: 1;" @click="onCloseUploadToefl">X</div>
             <div class="search-filter-form" style="padding-bottom: 20px;margin-bottom: 0;">
                 <h3 style="text-align: center;text-transform: uppercase;">Upload TOEFL Certificarte</h3>
                 <div class="row">
@@ -259,7 +260,7 @@
                     <div class="row">
                         <div class="form-group clearfix">
                             <div class="column one-third">
-                                <label class="side" for="">Additional Material <span class="color-red">*</span>
+                                <label class="side" for="">Additional Material</span>
                                     <br> 
                                     <span class="mini-message">Materi Tambahan</span>
                                 </label>
@@ -268,9 +269,9 @@
                                 <input type="file" 
                                 :name="`${item.id}[additionalMaterials][]`" 
                                 data-field="additionalMaterials" 
-                                @change="filesChanged( $event , index, fileRules.additionalMaterials)"
+                                @change="item.errors = { ...item.errors, additionalMaterials : additionalMaterialsValidated( $event.target.files, fileRules.additionalMaterials) }"
                                 multiple>
-                                <button @click.prevent="resetFile(index, $event)">Clear</button>
+                                <button @click.prevent="resetFile(index, $event, true)">Clear</button>
                                 <label class="label-message color-red">                                    
                                     {{ item.errors.additionalMaterials }}
                                 </label>
@@ -645,7 +646,7 @@
                                 <input type="file" 
                                     :name="`${item.id}[supportingMaterials][]`" 
                                     data-field="supportingMaterials" 
-                                    @change="filesChanged( $event , index, fileRules.researchSupportingMaterials)"
+                                    @change="filesChanged($event , index, fileRules.researchSupportingMaterials)"
                                     multiple
                                 >
                                 <button @click.prevent="resetFile(null, $event);item.errors.supportingMaterials = 'File must be chosen';">Clear</button>
@@ -710,7 +711,8 @@
     </div>
     <template v-if="searchTypeState == TECHNICAL">
         <nj-popup v-if="ACTION_TYPE == TYPE_SEARCH && dataSubTypes.length > 0" @close="ACTION_TYPE = searchTypeState = modalTypeState = null;">
-            <div class="p-wrapper shadow-md" style="background-color: white;width: 450px;padding-bottom: 20px;" @submit.prevent="">
+            <div class="p-wrapper shadow-md" style="background-color: white;width: 450px;padding-bottom: 20px; position: relative;" @submit.prevent="">
+                <div style="font-size: 16px;color: #5e5e5e;font-weight: 600;position: absolute;cursor: pointer;top: 16px;right: 18px; padding: 8px; z-index: 1;" @click="ACTION_TYPE = searchTypeState = modalTypeState = null;">X</div>
                 <div class="row search-filter-form" style="margin: 0 !important;padding-bottom: 20px;">
                     <div class="column">
                         <list-toefl 

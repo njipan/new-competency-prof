@@ -554,6 +554,8 @@ class Subtypes extends BaseController {
         );
         if(!empty($message)) $messages["teachingForm"] = $message;
 
+        if(empty($files['additionalMaterials']) || empty($files['additionalMaterials'][0]['tmp_name'])) return $messages;
+
         if(count($files['additionalMaterials']) > 6){
             $messages['additionalMaterials'] = 'File upload limit reached. Max upload is 6 files.';
         }

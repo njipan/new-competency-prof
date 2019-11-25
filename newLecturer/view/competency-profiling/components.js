@@ -24,7 +24,7 @@ function componentJS(){
         template: `
         <div>
             <div class="freeze-pane" data-fixed-left="1" data-fixed-right="0" data-height="300">
-                <table>
+                <table class="bordered">
                     <thead>
                         <tr>
                             <th style="text-align: center;">No</th>
@@ -119,7 +119,7 @@ function componentJS(){
                                     </div>
                                     <div class="column two-thirds">
                                         <input type="file" name="teachingForm" @change="validateTeachingForm" ref="teachingForm" style="width: 200px;">
-                                        <button @click.prevent="$refs.teachingForm.value = '';">
+                                        <button @click.prevent="$refs.teachingForm.value = ''; formUpdate.errors.teachingForm = null;">
                                             Clear
                                         </button>
                                         <label class="label-message color-red">                                    
@@ -139,6 +139,12 @@ function componentJS(){
                                     <div class="column two-thirds">
                                         <list-files 
                                         @delete = "onDeleteMaterial($event)"
+                                        @cancel = "onListFilesCanceled"
+                                        @change = "onListFilesChanged"
+                                        @delete = "onDeleteMaterial"
+                                        @fileitemchange = "onFileItemChanged"
+                                        @fileitemcancel = "onFileItemCanceled"
+                                        :errors = "errorFiles"
                                         column-id="MaterialID" add-name="additionalMaterials[]" name="additionalMaterials" :files="teach.AdditionalMaterials">
                                         </list-files>
                                         <label class="label-message color-red">                                    
@@ -177,10 +183,15 @@ function componentJS(){
                     },
                     isSubmitting : false
                 },
+                errorFiles : {},
+                MAX_SIZE_FILE : 20000000,
                 fileRules : {
                     teachingForm : [
                         "pdf",
                         "ppt",
+                        "pptx",
+                        "doc",
+                        "docx",
                         "zip",
                     ],
                     additionalMaterials : [
@@ -189,23 +200,73 @@ function componentJS(){
                         "mpeg",
                         "docx",
                         "zip",
-                    ],
-                    supportingMaterials : [
+                        "ppt",
+                        "pptx",
+                        "doc",
                         "docx",
-                        "pdf",
-                        "zip",
                     ],
-                    researchSupportingMaterials : [
-                        "pdf",
-                        "png",
-                        "jpg",
-                        "jpeg",
-                        "zip",
-                    ]
                 },
             }
         },
         methods : {
+            onListFilesCanceled : function(){
+                var _self = this;
+
+                _self.formUpdate.errors = { ..._self.formUpdate.errors,  additionalMaterials : null };
+            },
+            onFileItemCanceled : function(e, material){
+                var _self = this;
+                delete _self.errorFiles['file-'+material.MaterialID];
+                _self.errorFiles = { ..._self.errorFiles };
+            },
+            onFileItemChanged : function(e, material){
+                var _self = this;
+                delete _self.errorFiles['file-'+material.MaterialID];
+                _self.errorFiles = { ..._self.errorFiles };
+
+                const file = [ ...e.target.files ][0];
+                let message = null;
+                const names = file.name.split('.');
+                const type = names[names.length - 1] || '';
+                const rules = _self.fileRules.additionalMaterials;
+                const maxSize = 20000000;
+                if(names.length <= 1 || !rules.includes(type)){
+                    message =  `Only accept ${ rules.join(', ')} files`;
+                }
+                else if(file.size > _self.MAX_SIZE_FILE){
+                    message =  `File exceeds maximum size ${_self.MAX_SIZE_FILE / 1000000}MB`;
+                }
+                _self.errorFiles['file-'+material.MaterialID] = message;
+                _self.errorFiles = { ..._self.errorFiles };
+            },
+            onListFilesChanged : function(e){
+                var _self = this;
+                _self.formUpdate.errors.additionalMaterials = null;
+
+                const files = [ ...e.target.files ];
+                let message = null;
+                if(files.length + _self.teach.AdditionalMaterials.length > 6){
+                    message = 'File upload limit reached. Max upload is 6 files';
+                }
+                else{
+                    for(let file of files){
+                        const names = file.name.split('.');
+                        const type = names[names.length - 1] || '';
+                        const rules = _self.fileRules.additionalMaterials;
+                        const maxSize = 20000000;
+                        if(names.length <= 1 || !rules.includes(type)){
+                            message =  `Only accept ${ rules.join(', ')} files`;
+                            break;
+                        }
+                        else if(file.size > _self.MAX_SIZE_FILE){
+                            message =  `File exceeds maximum size ${_self.MAX_SIZE_FILE / 1000000}MB`;
+                            break;
+                        }
+                    }
+                }
+                
+                _self.formUpdate.errors = { ..._self.formUpdate.errors,  additionalMaterials : message };
+            },
             download : function(file){
                 var _self = this;
                 downloadFile(file);
@@ -237,18 +298,21 @@ function componentJS(){
             },
             validateTeachingForm : function(){
                 var _self = this;
-                const files = [..._self.$refs.teachingForm.files];
                 _self.formUpdate.errors.teachingForm = null;
-                if(typeof files[0].name == 'undefined'){
-                    _self.formUpdate.errors = Object.assign(_self.formUpdate.errors, { teachingForm : 'Must be selected' });
-                }
+                
+                const files = [..._self.$refs.teachingForm.files];
                 const names = files[0].name.split('.');
                 const type = names[names.length - 1] || '';
                 const rules = _self.fileRules.teachingForm;
+                const maxSize = 20000000;
+                let message = null;
                 if(names.length <= 1 || !rules.includes(type)){
-                    let message =  `Only accept ${_self.fileRules.teachingForm.join(', ')} files`;
-                    _self.formUpdate.errors = Object.assign(_self.formUpdate.errors, { teachingForm : message });
+                    message =  `Only accept ${_self.fileRules.teachingForm.join(', ')} files`;
                 }
+                else if(files[0].size > _self.MAX_SIZE_FILE){
+                    message =  `File exceeds maximum size ${_self.MAX_SIZE_FILE / 1000000}MB`;
+                }
+                _self.formUpdate.errors = Object.assign(_self.formUpdate.errors, { teachingForm : message });
             },
             onDeleteMaterial : function(material_id){
                 var _self = this;
@@ -264,10 +328,21 @@ function componentJS(){
             onDelete : function(id){
                 if(confirm('Are you sure want to delete?') === true) this.$emit('delete', id);
             },
+            isErrors: function(errors){
+                for(let errorKey in errors){
+                    if(errors[errorKey] != null){
+                        return true;
+                    }
+                }
+
+                return false;
+            },
             doUpdate : function(){
                 var _self = this;
-                delete _self.formUpdate.errors.additionalMaterials;
+
                 if(_self.formUpdate.isSubmitting) return;
+                if(_self.isAnyErrors(_self.formUpdate.errors, _self.errorFiles)) return;
+                
                 _self.formUpdate.isSubmitting = true;
                 const formData = new FormData(this.$refs.formUpdate);
                 formData.set('id', _self.teach.TeachingTrID);
@@ -289,6 +364,15 @@ function componentJS(){
                     _self.formUpdate.isSubmitting = false;
                     _self.formUpdate.errors = err.response.data;
                 });
+            },
+            isAnyErrors : function(errors, errorFiles){
+                for(let error of Object.values(errorFiles)){
+                    if(error != null && error != '') return true;
+                }
+                for(let error of Object.values(errors)){
+                    if(error != null && error != '') return true;
+                }
+                return false;
             },
         }
     });
@@ -501,7 +585,13 @@ function componentJS(){
                                         <div class="column two-thirds">
                                             <div class="row" style="margin: 0px 0px">
                                                 <list-files 
+                                                @delete = "onDeleteMaterial($event)"
+                                                @cancel = "onListFilesCanceled"
+                                                @change = "onListFilesChanged"
                                                 @delete = "onDeleteMaterial"
+                                                @fileitemchange = "onFileItemChanged"
+                                                @fileitemcancel = "onFileItemCanceled"
+                                                :errors = "errorFiles"
                                                 column-id="MaterialID" add-name="supportingMaterials[]" name="supportingMaterials" :files="comdev.SupportingMaterials">
                                                 </list-files>
                                                 <label class="label-message color-red">
@@ -527,7 +617,7 @@ function componentJS(){
                 </div>
             </nj-popup>
             <div class="freeze-pane">
-                <table>
+                <table class="bordered">
                     <thead>
                         <tr>
                             <th style="text-align: center;">No</th>
@@ -578,6 +668,15 @@ function componentJS(){
                     data : {},
                     errors : {},
                     isSubmitting : false
+                },
+                errorFiles : {},
+                MAX_SIZE_FILE : 20000000,
+                fileRules : {
+                    supportingMaterials : [
+                        "docx",
+                        "pdf",
+                        "zip",
+                    ]
                 }
             }
         },
@@ -644,7 +743,8 @@ function componentJS(){
             },
             doUpdate : function(){
                 var _self = this;
-                delete _self.formUpdate.errors.supportingMaterials;
+
+                if(_self.isAnyErrors(_self.formUpdate.errors, _self.errorFiles)) return;
                 if(_self.formUpdate.isSubmitting) return;
                 _self.formUpdate.isSubmitting = true;
                 const formData = new FormData(this.$refs.formUpdate);
@@ -668,6 +768,73 @@ function componentJS(){
                     _self.formUpdate.isSubmitting = false;
                 });
             },
+            onListFilesCanceled : function(){
+                var _self = this;
+
+                _self.formUpdate.errors = { ..._self.formUpdate.errors,  supportingMaterials : null };
+            },
+            onFileItemCanceled : function(e, material){
+                var _self = this;
+                delete _self.errorFiles['file-'+material.MaterialID];
+                _self.errorFiles = { ..._self.errorFiles };
+            },
+            onFileItemChanged : function(e, material){
+                var _self = this;
+                delete _self.errorFiles['file-'+material.MaterialID];
+                _self.errorFiles = { ..._self.errorFiles };
+
+                const file = [ ...e.target.files ][0];
+                let message = null;
+                const names = file.name.split('.');
+                const type = names[names.length - 1] || '';
+                const rules = _self.fileRules.supportingMaterials;
+                const maxSize = 20000000;
+                if(names.length <= 1 || !rules.includes(type)){
+                    message =  `Only accept ${ rules.join(', ')} files`;
+                }
+                else if(file.size > _self.MAX_SIZE_FILE){
+                    message =  `File exceeds maximum size ${_self.MAX_SIZE_FILE / 1000000}MB`;
+                }
+                _self.errorFiles['file-'+material.MaterialID] = message;
+                _self.errorFiles = { ..._self.errorFiles };
+            },
+            onListFilesChanged : function(e){
+                var _self = this;
+                _self.formUpdate.errors.supportingMaterials = null;
+
+                const files = [ ...e.target.files ];
+                let message = null;
+                if(files.length + _self.comdev.SupportingMaterials.length > 6){
+                    message = 'File upload limit reached. Max upload is 6 files';
+                }
+                else{
+                    for(let file of files){
+                        const names = file.name.split('.');
+                        const type = names[names.length - 1] || '';
+                        const rules = _self.fileRules.supportingMaterials;
+                        const maxSize = 20000000;
+                        if(names.length <= 1 || !rules.includes(type)){
+                            message =  `Only accept ${ rules.join(', ')} files`;
+                            break;
+                        }
+                        else if(file.size > _self.MAX_SIZE_FILE){
+                            message =  `File exceeds maximum size ${_self.MAX_SIZE_FILE / 1000000}MB`;
+                            break;
+                        }
+                    }
+                }
+                
+                _self.formUpdate.errors = { ..._self.formUpdate.errors,  supportingMaterials : message };
+            },
+            isAnyErrors : function(errors, errorFiles){
+                for(let error of Object.values(errorFiles)){
+                    if(error != null && error != '') return true;
+                }
+                for(let error of Object.values(errors)){
+                    if(error != null && error != '') return true;
+                }
+                return false;
+            },
         },
         created : function(){
             var _self = this;
@@ -681,7 +848,7 @@ function componentJS(){
         <div>
             <div v-if="items.length < 1">Please wait ... </div>
             <div class="freeze-pane" data-fixed-left="1" data-fixed-right="0" data-height="300" v-else>
-                <table>
+                <table class="bordered">
                     <thead>
                         <tr>
                             <th style="text-align: center;">No</th>
@@ -741,6 +908,7 @@ function componentJS(){
                     </tbody>
                 </table>
             </div>
+
             <nj-popup v-if="research != null" @close="research = null;$emit('cancel');">
                 <div class="p-wrapper shadow-md" style="background-color: white;width: 600px;">
                     <div class="p-wrapper" style="background-color: white;overflow-y: scroll;max-height: 400px;">
@@ -1002,7 +1170,12 @@ function componentJS(){
                                     </div>
                                     <div class="column two-thirds">
                                         <list-files 
+                                        @cancel = "onListFilesCanceled"
+                                        @change = "onListFilesChanged"
                                         @delete = "onDeleteMaterial"
+                                        @fileitemchange = "onFileItemChanged"
+                                        @fileitemcancel = "onFileItemCanceled"
+                                        :errors = "errorFiles"
                                         column-id="MaterialID" add-name="supportingMaterials[]" name="supportingMaterials" :files="research.SupportingMaterials">
                                         </list-files>
                                         <label class="label-message color-red">
@@ -1037,10 +1210,80 @@ function componentJS(){
                     isSubmitting : false,
                     errors : {}
                 },
+                fileRules : {
+                    supportingMaterials : [
+                        "doc",
+                        "docx",
+                        "pdf",
+                        "ppt",
+                        "pptx",
+                        "zip",
+                    ],
+                },
                 research : null,
+                errorFiles : {},
+                MAX_SIZE_FILE : 20000000
             }
         },
         methods : {
+            onListFilesCanceled : function(){
+                var _self = this;
+
+                _self.formUpdate.errors = { ..._self.formUpdate.errors,  supportingMaterials : null };
+            },
+            onFileItemCanceled : function(e, material){
+                var _self = this;
+                delete _self.errorFiles['file-'+material.MaterialID];
+                _self.errorFiles = { ..._self.errorFiles };
+            },
+            onFileItemChanged : function(e, material){
+                var _self = this;
+                delete _self.errorFiles['file-'+material.MaterialID];
+                _self.errorFiles = { ..._self.errorFiles };
+
+                const file = [ ...e.target.files ][0];
+                let message = null;
+                const names = file.name.split('.');
+                const type = names[names.length - 1] || '';
+                const rules = _self.fileRules.supportingMaterials;
+                const maxSize = 20000000;
+                if(names.length <= 1 || !rules.includes(type)){
+                    message =  `Only accept ${ rules.join(', ')} files`;
+                }
+                else if(file.size > _self.MAX_SIZE_FILE){
+                    message =  `File exceeds maximum size ${_self.MAX_SIZE_FILE / 1000000}MB`;
+                }
+                _self.errorFiles['file-'+material.MaterialID] = message;
+                _self.errorFiles = { ..._self.errorFiles };
+            },
+            onListFilesChanged : function(e){
+                var _self = this;
+                _self.formUpdate.errors.supportingMaterials = null;
+
+                const files = [ ...e.target.files ];
+                let message = null;
+                if(files.length + _self.research.SupportingMaterials.length > 6){
+                    message = 'File upload limit reached. Max upload is 6 files';
+                }
+                else{
+                    for(let file of files){
+                        const names = file.name.split('.');
+                        const type = names[names.length - 1] || '';
+                        const rules = _self.fileRules.supportingMaterials;
+                        const maxSize = 20000000;
+                        if(names.length <= 1 || !rules.includes(type)){
+                            message =  `Only accept ${ rules.join(', ')} files`;
+                            break;
+                        }
+                        else if(file.size > _self.MAX_SIZE_FILE){
+                            message =  `File exceeds maximum size ${_self.MAX_SIZE_FILE / 1000000}MB`;
+                            break;
+                        }
+                    }
+                }
+                
+                _self.formUpdate.errors = { ..._self.formUpdate.errors,  supportingMaterials : message };
+            },
             formattedCurrency : function(curr){
                 const number = parseInt(curr);
                 const temp = number.toLocaleString().split(',').join('.');
@@ -1235,7 +1478,10 @@ function componentJS(){
                     });
                 }
             },
-            isAnyErrors : function(errors){
+            isAnyErrors : function(errors, errorFiles){
+                for(let error of Object.values(errorFiles)){
+                    if(error != null && error != '') return true;
+                }
                 for(let error of Object.values(errors)){
                     if(error != null && error != '') return true;
                 }
@@ -1243,8 +1489,8 @@ function componentJS(){
             },
             doUpdate : function(){
                 var _self = this;
-                delete _self.formUpdate.errors.supportingMaterials;
-                if(_self.isAnyErrors(_self.formUpdate.errors)) return;
+
+                if(_self.isAnyErrors(_self.formUpdate.errors, _self.errorFiles)) return;
                 if(_self.formUpdate.isSubmitting) return;
                 _self.formUpdate.isSubmitting = true;
                 const formData = new FormData(this.$refs.formUpdate);
@@ -1279,7 +1525,7 @@ function componentJS(){
                 isShow : false,
             }
         },
-        props : ['files', 'name', 'columnId', 'addName'],
+        props : ['files', 'name', 'columnId', 'addName', 'errors'],
         template : `
         <div>
             <template v-if="files.length < 6">
@@ -1289,8 +1535,8 @@ function componentJS(){
                         <span v-else @click="$refs.addInputFiles.click()"> Add another files :  </span>
                     </a>
                     <template v-if="isShow">
-                        <input  style="width: 200px;" type="file" :name="addName" multiple ref="addInputFiles">
-                        <i @click="$event.target.parentNode.children[1].value = ''; isShow = false;" class="cursor-pointer icon icon-reject"></i>
+                        <input  style="width: 200px;" type="file" :name="addName" multiple ref="addInputFiles" @change="$emit('change', $event)">
+                        <i @click="$event.target.parentNode.children[1].value = ''; isShow = false; $emit('cancel')" class="cursor-pointer icon icon-reject"></i>
                     </template>
                 </div>
                 <br>
@@ -1309,8 +1555,11 @@ function componentJS(){
                     <div style="width: 100%;padding-right: 8px; box-sizing: border-box;">
                         <div>{{ file.LocationFile }}</div>
                         <div style="margin-top: 8px;">
-                            <input type="file" :name="getName(file[columnId])" style="width: 200px;" />
-                            <i @click="$event.target.parentNode.children[0].value = '';" class="cursor-pointer icon icon-reject" style="transform: scale(.8);"></i>
+                            <input type="file" :name="getName(file[columnId])" style="width: 200px;" @change="$emit('fileitemchange', $event, file)" />
+                            <i @click="$event.target.parentNode.children[0].value = ''; $emit('fileitemcancel', $event, file);" class="cursor-pointer icon icon-reject" style="transform: scale(.8);"></i>
+                            <label class="label-message color-red" v-if="isFileError(file.MaterialID)">
+                                {{ errors['file-'+file.MaterialID] }}
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -1318,6 +1567,10 @@ function componentJS(){
         </div>
         `,
         methods : {
+            isFileError : function(id){
+                var _self = this;
+                return typeof _self.errors['file-'+id] != 'undefined';
+            },
             download : function(file){
                 var _self = this;
                 downloadFile(file);
